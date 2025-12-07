@@ -1,5 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import vgyMigCockpit from '@/assets/vgy-mig-cockpit.jpg';
+import vgyPortrait from '@/assets/vgy-portrait.jpg';
 
 const Rolam: React.FC = () => {
   const { language } = useLanguage();
@@ -12,8 +14,8 @@ const Rolam: React.FC = () => {
 
       <div className="float-right ml-6 mb-4">
         <img 
-          src="https://varigyula.hu/images/stories/vgy_mig.jpg" 
-          alt="Vári Gyula MiG-29 mellett" 
+          src={vgyMigCockpit} 
+          alt="Vári Gyula egy MiG-29 pilótafülkéjében" 
           className="w-48 md:w-64 h-auto rounded-lg shadow-md border border-border"
         />
       </div>
@@ -172,7 +174,7 @@ const Rolam: React.FC = () => {
 
       <div className="mt-8 text-center">
         <img 
-          src="https://varigyula.hu/images/stories/583241_aff78b4cfa59908c86c884014c24c182_m.jpg" 
+          src={vgyPortrait} 
           alt="Vári Gyula" 
           className="inline-block max-w-full h-auto rounded-lg shadow-md border border-border"
         />
