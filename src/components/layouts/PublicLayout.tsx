@@ -1,156 +1,264 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plane, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Menu, X, ChevronRight, Phone, Mail, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const PublicLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
+  const { isAuthenticated, logout } = useAuth();
 
-  const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/experiences', label: 'Experiences' },
-    { href: '/operators', label: 'For Operators' },
-    { href: '/about', label: 'About' },
+  // Public links (no auth required)
+  const publicLinks = [
+    { href: '/', label: t('nav.home') },
+    { href: '/hirek', label: t('nav.news') },
+    { href: '/rolam', label: t('nav.about') },
   ];
 
+  // Protected links (auth required)
+  const protectedLinks = [
+    { href: '/kapcsolat', label: t('nav.contact') },
+    { href: '/arckepcsarnok', label: t('nav.gallery') },
+    { href: '/forum', label: t('nav.forum') },
+  ];
+
+  const allLinks = [...publicLinks, ...protectedLinks];
+
+  const getCurrentDate = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.toLocaleString('hu-HU', { month: 'long' });
+    const day = now.getDate();
+    const dayName = now.toLocaleString('hu-HU', { weekday: 'long' });
+    // Get name day (simplified - just showing a placeholder)
+    const nameDays: Record<string, string> = {
+      '12-7': 'Ambrus',
+      '12-8': 'Mária',
+      '12-9': 'Natália',
+    };
+    const nameDay = nameDays[`${now.getMonth() + 1}-${day}`] || 'Névnap';
+    
+    return `${year}. ${month} ${day}. ${dayName.charAt(0).toUpperCase() + dayName.slice(1)} - ${nameDay}`;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass">
-        <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl gradient-sky flex items-center justify-center shadow-md group-hover:shadow-glow transition-shadow duration-300">
-              <Plane className="w-5 h-5 text-primary-foreground" />
+    <div className="min-h-screen flex flex-col sky-background">
+      {/* Date Bar */}
+      <div className="bg-secondary/50 py-1 px-4 text-sm text-muted-foreground text-center border-b border-border">
+        {getCurrentDate()}
+      </div>
+
+      {/* Header with Logo */}
+      <header className="relative header-background py-6 overflow-hidden">
+        <div className="jet-overlay" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="block">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-primary tracking-wide drop-shadow-sm">
+                VÁRI GYULA
+              </h1>
+            </Link>
+            <div className="hidden md:flex items-center gap-4">
+              <LanguageSwitcher />
+              {isAuthenticated ? (
+                <Button variant="outline" size="sm" onClick={logout}>
+                  {t('auth.logout')}
+                </Button>
+              ) : (
+                <Button variant="default" size="sm" asChild>
+                  <Link to="/belepes">{t('auth.login')}</Link>
+                </Button>
+              )}
             </div>
-            <span className="font-display font-bold text-xl text-foreground">
-              Sky<span className="text-primary">Book</span>
-            </span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
-                  location.pathname === link.href
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
           </div>
+        </div>
+      </header>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link to="/login">Sign In</Link>
-            </Button>
-            <Button variant="gradient" asChild>
-              <Link to="/register">Get Started</Link>
-            </Button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
-        </nav>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden glass border-t border-border">
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-              {navLinks.map((link) => (
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-card border-b border-border">
+          <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
+            {allLinks.map((link) => {
+              const isProtected = protectedLinks.some(p => p.href === link.href);
+              const showLock = isProtected && !isAuthenticated;
+              
+              return (
                 <Link
                   key={link.href}
-                  to={link.href}
+                  to={showLock ? '/belepes' : link.href}
                   className={cn(
-                    "text-sm font-medium py-2",
-                    location.pathname === link.href
-                      ? "text-primary"
-                      : "text-muted-foreground"
+                    "menu-item",
+                    location.pathname === link.href && "menu-item-active"
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
+                  <ChevronRight className="w-4 h-4" />
                   {link.label}
+                  {showLock && <Lock className="w-3 h-3 ml-auto opacity-50" />}
                 </Link>
-              ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" asChild>
-                  <Link to="/login">Sign In</Link>
+              );
+            })}
+            <div className="flex items-center gap-2 pt-4 border-t border-border">
+              <LanguageSwitcher />
+              {isAuthenticated ? (
+                <Button variant="outline" size="sm" onClick={logout} className="flex-1">
+                  {t('auth.logout')}
                 </Button>
-                <Button variant="gradient" asChild>
-                  <Link to="/register">Get Started</Link>
+              ) : (
+                <Button variant="default" size="sm" asChild className="flex-1">
+                  <Link to="/belepes">{t('auth.login')}</Link>
                 </Button>
-              </div>
+              )}
             </div>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
-      {/* Main Content */}
-      <main className="flex-1 pt-16">
-        <Outlet />
-      </main>
+      {/* Main Content Area */}
+      <div className="flex-1 container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Main Content */}
+          <main className="flex-1 order-2 lg:order-1">
+            <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
+              {/* Breadcrumb */}
+              <div className="px-6 py-3 bg-secondary/30 border-b border-border flex items-center gap-2 text-sm">
+                <Link to="/" className="text-primary hover:underline">🏠</Link>
+                <span className="text-muted-foreground">Ön itt van:</span>
+                <span className="font-medium text-foreground">
+                  {allLinks.find(l => l.href === location.pathname)?.label || t('nav.home')}
+                </span>
+              </div>
+              
+              {/* Page Content */}
+              <div className="p-6">
+                <Outlet />
+              </div>
+            </div>
+          </main>
+
+          {/* Sidebar */}
+          <aside className="w-full lg:w-80 order-1 lg:order-2 space-y-6">
+            {/* Main Menu */}
+            <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
+              <div className="bg-secondary/50 px-4 py-3 border-b border-border">
+                <h3 className="font-display font-semibold text-foreground">{t('common.mainMenu')}</h3>
+              </div>
+              <nav className="p-3 space-y-1">
+                {allLinks.map((link) => {
+                  const isProtected = protectedLinks.some(p => p.href === link.href);
+                  const showLock = isProtected && !isAuthenticated;
+                  
+                  return (
+                    <Link
+                      key={link.href}
+                      to={showLock ? '/belepes' : link.href}
+                      className={cn(
+                        "menu-item text-sm",
+                        location.pathname === link.href && "menu-item-active"
+                      )}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                      {link.label}
+                      {showLock && <Lock className="w-3 h-3 ml-auto opacity-50" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Contact Info */}
+            <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
+              <div className="bg-secondary/50 px-4 py-3 border-b border-border">
+                <h3 className="font-display font-semibold text-foreground">{t('common.contact')}</h3>
+              </div>
+              <div className="p-4">
+                <img 
+                  src="https://varigyula.hu/images/stories/0009_mid.jpg" 
+                  alt="Vári Gyula" 
+                  className="w-24 h-auto mb-4 rounded shadow-sm"
+                />
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <span className="font-semibold">+3620 777-9000</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-primary" />
+                    <a href="mailto:varigyula@varigyula.hu" className="text-primary hover:underline">
+                      varigyula@varigyula.hu
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Login Box (when not authenticated) */}
+            {!isAuthenticated && (
+              <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
+                <div className="bg-secondary/50 px-4 py-3 border-b border-border">
+                  <h3 className="font-display font-semibold text-foreground">{t('auth.login')}</h3>
+                </div>
+                <div className="p-4">
+                  <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); }}>
+                    <Input 
+                      type="text" 
+                      placeholder={t('auth.username')} 
+                      className="text-sm"
+                    />
+                    <Input 
+                      type="password" 
+                      placeholder={t('auth.password')} 
+                      className="text-sm"
+                    />
+                    <div className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" id="remember" className="rounded" />
+                      <label htmlFor="remember" className="text-muted-foreground">
+                        {t('auth.rememberMe')}
+                      </label>
+                    </div>
+                    <Button type="submit" size="sm" className="w-full">
+                      {t('auth.login')}
+                    </Button>
+                  </form>
+                  <div className="mt-4 space-y-1 text-xs">
+                    <a href="#" className="text-primary hover:underline block">
+                      {t('auth.forgotPassword')}
+                    </a>
+                    <p className="text-muted-foreground">
+                      {t('auth.noAccount')}{' '}
+                      <Link to="/regisztracio" className="text-primary hover:underline">
+                        {t('auth.createAccount')}
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </aside>
+        </div>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-sidebar text-sidebar-foreground py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg gradient-sky flex items-center justify-center">
-                  <Plane className="w-4 h-4 text-primary-foreground" />
-                </div>
-                <span className="font-display font-bold text-lg">SkyBook</span>
-              </div>
-              <p className="text-sm text-sidebar-foreground/70">
-                Premium flight experiences made simple.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-sidebar-foreground/70">
-                <li><Link to="/experiences" className="hover:text-sidebar-foreground">Experiences</Link></li>
-                <li><Link to="/operators" className="hover:text-sidebar-foreground">For Operators</Link></li>
-                <li><Link to="/pricing" className="hover:text-sidebar-foreground">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-sidebar-foreground/70">
-                <li><Link to="/about" className="hover:text-sidebar-foreground">About</Link></li>
-                <li><Link to="/contact" className="hover:text-sidebar-foreground">Contact</Link></li>
-                <li><Link to="/careers" className="hover:text-sidebar-foreground">Careers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-sidebar-foreground/70">
-                <li><Link to="/privacy" className="hover:text-sidebar-foreground">Privacy</Link></li>
-                <li><Link to="/terms" className="hover:text-sidebar-foreground">Terms</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-sidebar-border mt-8 pt-8 text-sm text-sidebar-foreground/50 text-center">
-            © {new Date().getFullYear()} SkyBook. All rights reserved.
-          </div>
+      <footer className="bg-sidebar text-sidebar-foreground py-6 mt-auto">
+        <div className="container mx-auto px-4 text-center text-sm">
+          <p>© {new Date().getFullYear()} Vári Gyula. {t('footer.rights')}</p>
         </div>
       </footer>
     </div>
