@@ -21,13 +21,9 @@ const Index: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-2xl md:text-3xl font-display font-bold text-primary mb-2">
-        {t('common.welcome')}
-      </h2>
-      
-      <h3 className="text-xl font-display font-semibold text-foreground mb-6">
+      <h2 className="text-2xl md:text-3xl font-display font-bold text-primary mb-6">
         {t('nav.home')}
-      </h3>
+      </h2>
 
       {/* Windfinder Weather Widget */}
       <div className="bg-card border border-border rounded-lg p-4 mb-8 shadow-sm">
