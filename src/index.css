@@ -2,107 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Roboto+Slab:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Aviation-inspired color palette */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Vári Gyula inspired color palette - sky blue and cyan tones */
+    --background: 195 30% 96%;
+    --foreground: 200 25% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 200 25% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 200 25% 20%;
 
-    /* Deep sky blue - primary brand */
-    --primary: 213 94% 45%;
+    /* Cyan sky blue - primary brand */
+    --primary: 187 70% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft cloud gray */
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 222 47% 11%;
+    /* Light sky */
+    --secondary: 195 35% 90%;
+    --secondary-foreground: 200 25% 20%;
 
-    --muted: 214 32% 91%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 195 20% 88%;
+    --muted-foreground: 200 15% 45%;
 
-    /* Warm amber accent */
-    --accent: 38 92% 50%;
+    /* Warm accent */
+    --accent: 35 90% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 213 94% 45%;
+    --border: 195 25% 85%;
+    --input: 195 25% 85%;
+    --ring: 187 70% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom tokens */
-    --sky-gradient: linear-gradient(135deg, hsl(213 94% 45%) 0%, hsl(199 89% 48%) 50%, hsl(187 85% 53%) 100%);
-    --sunset-gradient: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 95% 53%) 100%);
-    --glass-bg: hsla(0, 0%, 100%, 0.8);
-    --glass-border: hsla(214, 32%, 91%, 0.5);
+    --sky-gradient: linear-gradient(180deg, hsl(195 60% 85%) 0%, hsl(200 70% 92%) 50%, hsl(195 50% 95%) 100%);
+    --header-gradient: linear-gradient(180deg, hsl(195 50% 88%) 0%, hsl(200 60% 94%) 100%);
+    --glass-bg: hsla(0, 0%, 100%, 0.9);
+    --glass-border: hsla(195, 25%, 85%, 0.6);
     
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsla(222, 47%, 11%, 0.05);
-    --shadow-md: 0 4px 6px -1px hsla(222, 47%, 11%, 0.1), 0 2px 4px -2px hsla(222, 47%, 11%, 0.1);
-    --shadow-lg: 0 10px 15px -3px hsla(222, 47%, 11%, 0.1), 0 4px 6px -4px hsla(222, 47%, 11%, 0.1);
-    --shadow-glow: 0 0 40px hsla(213, 94%, 45%, 0.15);
+    --shadow-sm: 0 1px 2px 0 hsla(200, 25%, 20%, 0.05);
+    --shadow-md: 0 4px 6px -1px hsla(200, 25%, 20%, 0.08), 0 2px 4px -2px hsla(200, 25%, 20%, 0.06);
+    --shadow-lg: 0 10px 15px -3px hsla(200, 25%, 20%, 0.08), 0 4px 6px -4px hsla(200, 25%, 20%, 0.06);
 
     /* Sidebar */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 214 32% 91%;
-    --sidebar-primary: 213 94% 45%;
+    --sidebar-background: 200 25% 18%;
+    --sidebar-foreground: 195 20% 90%;
+    --sidebar-primary: 187 70% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 214 32% 91%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 213 94% 45%;
+    --sidebar-accent: 200 20% 25%;
+    --sidebar-accent-foreground: 195 20% 90%;
+    --sidebar-border: 200 20% 25%;
+    --sidebar-ring: 187 70% 50%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    --background: 200 25% 8%;
+    --foreground: 195 30% 96%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 200 25% 12%;
+    --card-foreground: 195 30% 96%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 200 25% 12%;
+    --popover-foreground: 195 30% 96%;
 
-    --primary: 213 94% 55%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 187 70% 55%;
+    --primary-foreground: 200 25% 10%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 200 20% 20%;
+    --secondary-foreground: 195 30% 96%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 200 20% 20%;
+    --muted-foreground: 195 20% 65%;
 
-    --accent: 38 92% 50%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 35 90% 55%;
+    --accent-foreground: 200 25% 10%;
 
     --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 195 30% 96%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 213 94% 55%;
+    --border: 200 20% 20%;
+    --input: 200 20% 20%;
+    --ring: 187 70% 55%;
 
-    --glass-bg: hsla(222, 47%, 8%, 0.8);
-    --glass-border: hsla(217, 33%, 17%, 0.5);
+    --glass-bg: hsla(200, 25%, 12%, 0.9);
+    --glass-border: hsla(200, 20%, 20%, 0.6);
 
-    --sidebar-background: 222 47% 4%;
-    --sidebar-foreground: 214 32% 91%;
-    --sidebar-primary: 213 94% 55%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217 33% 12%;
-    --sidebar-accent-foreground: 214 32% 91%;
-    --sidebar-border: 217 33% 12%;
-    --sidebar-ring: 213 94% 55%;
+    --sidebar-background: 200 25% 6%;
+    --sidebar-foreground: 195 20% 90%;
+    --sidebar-primary: 187 70% 55%;
+    --sidebar-primary-foreground: 200 25% 10%;
+    --sidebar-accent: 200 20% 15%;
+    --sidebar-accent-foreground: 195 20% 90%;
+    --sidebar-border: 200 20% 15%;
+    --sidebar-ring: 187 70% 55%;
   }
 }
 
@@ -127,27 +126,28 @@
     border: 1px solid var(--glass-border);
   }
 
-  .gradient-sky {
+  .sky-background {
     background: var(--sky-gradient);
+    background-attachment: fixed;
   }
 
-  .gradient-sunset {
-    background: var(--sunset-gradient);
+  .header-background {
+    background: var(--header-gradient);
   }
 
-  .text-gradient-sky {
-    background: var(--sky-gradient);
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(187 60% 55%) 100%);
+  }
+
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(187 60% 55%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+    box-shadow: 0 0 30px hsla(187, 70%, 45%, 0.2);
   }
 
   .animate-fade-in {
@@ -157,14 +157,13 @@
   .animate-slide-up {
     animation: slideUp 0.5s ease-out forwards;
   }
-}
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
+  .menu-item {
+    @apply flex items-center gap-2 px-4 py-2.5 text-primary hover:bg-primary/10 transition-colors rounded-md font-medium;
   }
-  50% {
-    transform: translateY(-10px);
+
+  .menu-item-active {
+    @apply bg-primary/10 text-primary font-semibold;
   }
 }
 
@@ -186,4 +185,18 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Jet fighter illustration effect */
+.jet-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60%;
+  height: 100%;
+  background-image: url('https://varigyula.hu/images/stories/mig29_head.jpg');
+  background-size: cover;
+  background-position: right center;
+  opacity: 0.15;
+  pointer-events: none;
 }
