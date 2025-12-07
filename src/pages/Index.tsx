@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import vgyCockpit from '@/assets/vgy-cockpit.jpg';
+import portrait from '@/assets/portrait.jpg';
+import mig29Flight from '@/assets/mig29-flight.jpg';
 
 const Index: React.FC = () => {
   const { t } = useLanguage();
@@ -22,7 +25,7 @@ const Index: React.FC = () => {
             className="inline-block group"
           >
             <img 
-              src="https://varigyula.hu/images/stories/0009_cl.jpg" 
+              src={vgyCockpit} 
               alt="Vári Gyula a pilótafülkében" 
               className="max-w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300 border border-border"
             />
@@ -34,7 +37,7 @@ const Index: React.FC = () => {
         <div className="text-center">
           <Link to="/rolam" className="inline-block group">
             <img 
-              src="https://varigyula.hu/images/stories/vgy_cl.jpg" 
+              src={portrait} 
               alt="Vári Gyula portré" 
               className="max-w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300 border border-border"
             />
@@ -51,7 +54,7 @@ const Index: React.FC = () => {
             className="inline-block group"
           >
             <img 
-              src="https://varigyula.hu/images/stories/001.jpg" 
+              src={mig29Flight} 
               alt="MiG-29 vadászrepülőgép" 
               className="max-w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300 border border-border"
             />
