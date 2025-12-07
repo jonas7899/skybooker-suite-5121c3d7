@@ -42,6 +42,7 @@ export const translations: Translations = {
   'common.date': { hu: 'dátum', en: 'date' },
   'common.clickImage': { hu: 'Kattints a képre!', en: 'Click on the image!' },
   'common.readMore': { hu: 'Tovább olvasom', en: 'Read more' },
+  'common.weather': { hu: 'Időjárás - Kecskemét', en: 'Weather - Kecskemét' },
   'common.loginRequired': { hu: 'Ez a tartalom csak bejelentkezett felhasználóknak érhető el.', en: 'This content is only available to logged-in users.' },
   
   // Footer
