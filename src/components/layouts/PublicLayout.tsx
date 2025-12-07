@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,24 @@ const PublicLayout: React.FC = () => {
   const location = useLocation();
   const { t } = useLanguage();
   const { isAuthenticated, logout } = useAuth();
+  const windfinderRef = useRef<HTMLDivElement>(null);
+
+  // Public paths where WindFinder widget should be displayed
+  const publicPaths = ['/', '/hirek', '/rolam'];
+  const showWindfinder = publicPaths.includes(location.pathname);
+
+  useEffect(() => {
+    if (showWindfinder && windfinderRef.current) {
+      // Clear previous content
+      windfinderRef.current.innerHTML = '';
+      
+      // Create and append the script
+      const script = document.createElement('script');
+      script.src = 'https://www.windfinder.com/widget/forecast/js/kecskemet?unit_wave=m&unit_rain=mm&unit_temperature=c&unit_wind=kts&unit_pressure=hPa&days=4&show_day=1&show_waves=0';
+      script.async = true;
+      windfinderRef.current.appendChild(script);
+    }
+  }, [showWindfinder]);
 
   // Public links (no auth required)
   const publicLinks = [
@@ -150,6 +168,23 @@ const PublicLayout: React.FC = () => {
               <div className="p-6">
                 <Outlet />
               </div>
+
+              {/* WindFinder Widget - only on public pages */}
+              {showWindfinder && (
+                <div className="p-6 pt-0">
+                  <div className="bg-secondary/20 rounded-lg p-4 border border-border">
+                    <h4 className="text-lg font-display font-semibold text-primary mb-3">
+                      {t('common.weather')}
+                    </h4>
+                    <div ref={windfinderRef} className="windfinder-widget" />
+                    <noscript>
+                      <a rel="nofollow" href="https://www.windfinder.com/forecast/kecskemet?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-forecast">
+                        Wind forecast for Kecskemét Air Base
+                      </a> provided by <a rel="nofollow" href="https://www.windfinder.com?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-logo">windfinder.com</a>
+                    </noscript>
+                  </div>
+                </div>
+              )}
             </div>
           </main>
 

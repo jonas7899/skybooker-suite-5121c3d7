@@ -1,42 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index: React.FC = () => {
   const { t } = useLanguage();
-  const windfinderRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (windfinderRef.current) {
-      // Clear previous content
-      windfinderRef.current.innerHTML = '';
-      
-      // Create and append the script
-      const script = document.createElement('script');
-      script.src = 'https://www.windfinder.com/widget/forecast/js/kecskemet?unit_wave=m&unit_rain=mm&unit_temperature=c&unit_wind=kts&unit_pressure=hPa&days=4&show_day=1&show_waves=0';
-      script.async = true;
-      windfinderRef.current.appendChild(script);
-    }
-  }, []);
 
   return (
     <div className="animate-fade-in">
       <h2 className="text-2xl md:text-3xl font-display font-bold text-primary mb-6">
         {t('nav.home')}
       </h2>
-
-      {/* Windfinder Weather Widget */}
-      <div className="bg-card border border-border rounded-lg p-4 mb-8 shadow-sm">
-        <h4 className="text-lg font-display font-semibold text-primary mb-3">
-          {t('common.weather')}
-        </h4>
-        <div ref={windfinderRef} className="windfinder-widget" />
-        <noscript>
-          <a rel="nofollow" href="https://www.windfinder.com/forecast/kecskemet?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-forecast">
-            Wind forecast for Kecskemét Air Base
-          </a> provided by <a rel="nofollow" href="https://www.windfinder.com?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-logo">windfinder.com</a>
-        </noscript>
-      </div>
 
       {/* Main Images */}
       <div className="space-y-8">
