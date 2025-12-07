@@ -171,18 +171,14 @@ const PublicLayout: React.FC = () => {
 
               {/* WindFinder Widget - only on public pages */}
               {showWindfinder && (
-                <div className="p-6 pt-0">
-                  <div className="bg-secondary/20 rounded-lg p-4 border border-border">
-                    <h4 className="text-lg font-display font-semibold text-primary mb-3">
-                      {t('common.weather')}
-                    </h4>
-                    <div ref={windfinderRef} className="windfinder-widget" />
-                    <noscript>
-                      <a rel="nofollow" href="https://www.windfinder.com/forecast/kecskemet?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-forecast">
-                        Wind forecast for Kecskemét Air Base
-                      </a> provided by <a rel="nofollow" href="https://www.windfinder.com?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-logo">windfinder.com</a>
-                    </noscript>
-                  </div>
+                <div className="px-6 pb-6">
+                  <p className="text-sm text-muted-foreground mb-2">WindFinder:</p>
+                  <div ref={windfinderRef} className="windfinder-widget" />
+                  <noscript>
+                    <a rel="nofollow" href="https://www.windfinder.com/forecast/kecskemet?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-forecast">
+                      Wind forecast for Kecskemét Air Base
+                    </a> provided by <a rel="nofollow" href="https://www.windfinder.com?utm_source=forecast&utm_medium=web&utm_campaign=homepageweather&utm_content=noscript-logo">windfinder.com</a>
+                  </noscript>
                 </div>
               )}
             </div>
