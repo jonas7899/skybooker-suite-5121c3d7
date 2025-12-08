@@ -10,6 +10,7 @@ import PublicLayout from "@/components/layouts/PublicLayout";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import OperatorProtectedRoute from "@/components/auth/OperatorProtectedRoute";
+import UserProtectedRoute from "@/components/auth/UserProtectedRoute";
 import Index from "./pages/Index";
 import Rolam from "./pages/Rolam";
 import Hirek from "./pages/Hirek";
@@ -69,9 +70,11 @@ const App = () => (
               <Route path="/belepes" element={<Login />} />
               <Route path="/regisztracio" element={<Register />} />
 
-              {/* User Dashboard Routes */}
-              <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route path="bookings" element={<UserBookingsPage />} />
+              {/* User Dashboard Routes (protected, active users only) */}
+              <Route path="/dashboard" element={<UserProtectedRoute />}>
+                <Route element={<DashboardLayout />}>
+                  <Route path="bookings" element={<UserBookingsPage />} />
+                </Route>
               </Route>
 
               {/* Admin Login */}
