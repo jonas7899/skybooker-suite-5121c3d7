@@ -27,6 +27,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import OperatorCalendar from "./pages/operator/OperatorCalendar";
 import OperatorBookings from "./pages/operator/OperatorBookings";
 import OperatorPricing from "./pages/operator/OperatorPricing";
+import OperatorBilling from "./pages/operator/OperatorBilling";
 import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
 import BookingCheckout from "./pages/booking/BookingCheckout";
 
@@ -83,6 +84,7 @@ const App = () => (
                 <Route path="calendar" element={<OperatorCalendar />} />
                 <Route path="bookings" element={<OperatorBookings />} />
                 <Route path="pricing" element={<OperatorPricing />} />
+                <Route path="billing" element={<OperatorBilling />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
