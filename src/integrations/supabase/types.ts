@@ -340,24 +340,42 @@ export type Database = {
       }
       operators: {
         Row: {
+          billing_email: string | null
+          billing_name: string | null
           created_at: string
           id: string
           name: string
           slug: string
+          subscription_expires_at: string | null
+          subscription_plan: string | null
+          subscription_price_huf: number | null
+          subscription_started_at: string | null
           subscription_status: string
         }
         Insert: {
+          billing_email?: string | null
+          billing_name?: string | null
           created_at?: string
           id?: string
           name: string
           slug: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string | null
+          subscription_price_huf?: number | null
+          subscription_started_at?: string | null
           subscription_status?: string
         }
         Update: {
+          billing_email?: string | null
+          billing_name?: string | null
           created_at?: string
           id?: string
           name?: string
           slug?: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string | null
+          subscription_price_huf?: number | null
+          subscription_started_at?: string | null
           subscription_status?: string
         }
         Relationships: []
@@ -441,6 +459,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_operator_subscription_active: {
+        Args: { _operator_id: string }
         Returns: boolean
       }
     }
