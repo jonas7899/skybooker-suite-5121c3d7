@@ -1,15 +1,18 @@
 import React from 'react';
 import { BarChart3 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const AdminAnalytics: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-          Platform Analytics
+          {t('admin.analytics.title')}
         </h1>
         <p className="text-muted-foreground">
-          Monitor platform-wide performance
+          {t('admin.analytics.subtitle')}
         </p>
       </div>
 
@@ -18,10 +21,10 @@ const AdminAnalytics: React.FC = () => {
           <BarChart3 className="w-8 h-8 text-muted-foreground" />
         </div>
         <h2 className="text-xl font-display font-semibold mb-2">
-          Analytics coming soon
+          {t('admin.analytics.comingSoon')}
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Platform analytics will be available once operators start using the platform.
+          {t('admin.analytics.comingSoonDesc')}
         </p>
       </div>
     </div>

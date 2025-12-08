@@ -135,6 +135,46 @@ export const translations: Translations = {
   'waitingList.joined': { hu: 'Feliratkoztál!', en: 'You joined!' },
   'waitingList.joinedDesc': { hu: 'Értesítünk ha hely szabadul', en: 'We will notify you' },
   'waitingList.loginRequired': { hu: 'Be kell jelentkezned', en: 'You need to log in' },
+
+  // Admin Dashboard
+  'admin.dashboard.title': { hu: 'Platform áttekintés', en: 'Platform Overview' },
+  'admin.dashboard.subtitle': { hu: 'Szuper Admin Vezérlőpult', en: 'Super Admin Dashboard' },
+  'admin.dashboard.totalOperators': { hu: 'Összes operátor', en: 'Total Operators' },
+  'admin.dashboard.activeUsers': { hu: 'Aktív felhasználók', en: 'Active Users' },
+  'admin.dashboard.activeSubscriptions': { hu: 'Aktív előfizetések', en: 'Active Subscriptions' },
+  'admin.dashboard.monthlyRevenue': { hu: 'Havi bevétel', en: 'Monthly Revenue' },
+  'admin.dashboard.recentOperators': { hu: 'Legutóbbi operátorok', en: 'Recent Operators' },
+  'admin.dashboard.noOperators': { hu: 'Még nincs regisztrált operátor.', en: 'No operators registered yet.' },
+  'admin.dashboard.recentActivity': { hu: 'Legutóbbi aktivitás', en: 'Recent Activity' },
+  'admin.dashboard.noActivity': { hu: 'Nincs megjeleníthető aktivitás.', en: 'No recent activity to display.' },
+
+  // Admin Subscriptions
+  'admin.subscriptions.title': { hu: 'Előfizetések', en: 'Subscriptions' },
+  'admin.subscriptions.subtitle': { hu: 'Operátor előfizetések kezelése', en: 'Manage operator subscriptions' },
+  'admin.subscriptions.active': { hu: 'Aktív', en: 'Active' },
+  'admin.subscriptions.trial': { hu: 'Próba', en: 'Trial' },
+  'admin.subscriptions.expired': { hu: 'Lejárt', en: 'Expired' },
+  'admin.subscriptions.empty.title': { hu: 'Még nincs előfizetés', en: 'No subscriptions yet' },
+  'admin.subscriptions.empty.description': { hu: 'Az operátor előfizetések itt jelennek meg.', en: 'Operator subscriptions will appear here once operators subscribe.' },
+
+  // Admin Analytics
+  'admin.analytics.title': { hu: 'Platform Analitika', en: 'Platform Analytics' },
+  'admin.analytics.subtitle': { hu: 'Platformszintű teljesítmény figyelése', en: 'Monitor platform-wide performance' },
+  'admin.analytics.comingSoon': { hu: 'Analitika hamarosan', en: 'Analytics coming soon' },
+  'admin.analytics.comingSoonDesc': { hu: 'A platform analitika elérhető lesz, amint az operátorok elkezdik használni a platformot.', en: 'Platform analytics will be available once operators start using the platform.' },
+
+  // Admin Settings
+  'admin.settings.title': { hu: 'Platform beállítások', en: 'Platform Settings' },
+  'admin.settings.subtitle': { hu: 'Platformszintű beállítások konfigurálása', en: 'Configure platform-wide settings' },
+  'admin.settings.general': { hu: 'Általános beállítások', en: 'General Settings' },
+  'admin.settings.platformName': { hu: 'Platform neve', en: 'Platform Name' },
+  'admin.settings.supportEmail': { hu: 'Support email', en: 'Support Email' },
+  'admin.settings.saveChanges': { hu: 'Mentés', en: 'Save Changes' },
+  'admin.settings.pricing': { hu: 'Árazás', en: 'Pricing' },
+  'admin.settings.pricingDesc': { hu: 'Operátor előfizetési árazás', en: 'Operator subscription pricing' },
+  'admin.settings.monthlyPrice': { hu: 'Havi ár (HUF)', en: 'Monthly Price (HUF)' },
+  'admin.settings.trialDays': { hu: 'Próbaidőszak (nap)', en: 'Trial Period (days)' },
+  'admin.settings.updatePricing': { hu: 'Árazás frissítése', en: 'Update Pricing' },
 };
 
 interface LanguageContextType {
