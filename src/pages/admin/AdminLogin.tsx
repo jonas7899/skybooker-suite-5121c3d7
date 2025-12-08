@@ -131,7 +131,7 @@ const AdminLogin: React.FC = () => {
       // Validate phone format
       const phoneRegex = /^\+[1-9][\d\s]{7,17}$/;
       const cleanPhone = newAdminPhone.replace(/\s/g, '');
-      if (!phoneRegex.test(cleanPhone) && newAdminPhone.length > 0) {
+      if (newAdminPhone.length > 0 && !phoneRegex.test(cleanPhone)) {
         toast({
           title: language === 'hu' ? 'Érvénytelen telefonszám' : 'Invalid phone number',
           description: language === 'hu' 
@@ -143,7 +143,7 @@ const AdminLogin: React.FC = () => {
         return;
       }
 
-      // Create new super admin
+      // Create new super admin auth user
       const { data, error } = await supabase.auth.signUp({
         email: newAdminEmail,
         password: newAdminPassword,
@@ -161,36 +161,29 @@ const AdminLogin: React.FC = () => {
       }
 
       if (data.user) {
-        // Create profile with active status
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            full_name: newAdminName,
-            phone: newAdminPhone || null,
-            status: 'active',
-            is_bootstrap: false,
+        // Use the security definer function to create profile and role
+        const { data: result, error: fnError } = await supabase
+          .rpc('create_first_super_admin', {
+            _user_id: data.user.id,
+            _full_name: newAdminName,
+            _phone: newAdminPhone || null,
           });
 
-        if (profileError) throw profileError;
+        if (fnError) {
+          throw fnError;
+        }
 
-        // Create super_admin role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: 'super_admin',
-            approved_at: new Date().toISOString(),
+        if (!result) {
+          toast({
+            title: language === 'hu' ? 'Hiba' : 'Error',
+            description: language === 'hu' 
+              ? 'Már létezik Super Admin a rendszerben'
+              : 'A Super Admin already exists in the system',
+            variant: 'destructive',
           });
-
-        if (roleError) throw roleError;
-
-        // Inactivate bootstrap user if exists
-        await supabase
-          .from('profiles')
-          .update({ status: 'inactive' })
-          .eq('is_bootstrap', true)
-          .eq('status', 'bootstrap');
+          setIsLoading(false);
+          return;
+        }
 
         toast({
           title: language === 'hu' ? 'Super Admin létrehozva!' : 'Super Admin created!',

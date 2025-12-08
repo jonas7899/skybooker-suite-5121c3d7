@@ -657,6 +657,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_first_super_admin: {
+        Args: { _full_name: string; _phone?: string; _user_id: string }
+        Returns: boolean
+      }
       generate_voucher_code: { Args: never; Returns: string }
       get_user_operator_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
