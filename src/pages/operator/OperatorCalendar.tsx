@@ -6,7 +6,7 @@ import { WeeklyCalendar } from '@/components/scheduling/WeeklyCalendar';
 import { MonthlyCalendar } from '@/components/scheduling/MonthlyCalendar';
 import { CreateTimeSlotDialog } from '@/components/scheduling/CreateTimeSlotDialog';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Calendar as CalendarIcon, Grid3X3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TimeSlot, FlightPackage } from '@/types/scheduling';
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const OperatorCalendar = () => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const { userRole } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
@@ -80,14 +80,14 @@ const OperatorCalendar = () => {
         ...data,
         operator_id: operatorId,
       });
-      toast.success(language === 'hu' ? 'Időpont létrehozva!' : 'Time slot created!');
+      toast.success(t('operator.calendar.slotCreated'));
       if (viewMode === 'week') {
         fetchWeekSlots(currentDate);
       } else {
         fetchMonthSlots(currentDate);
       }
     } catch (error) {
-      toast.error(language === 'hu' ? 'Hiba történt' : 'An error occurred');
+      toast.error(t('error.generic'));
     }
   };
 
@@ -96,7 +96,7 @@ const OperatorCalendar = () => {
     
     try {
       await deleteTimeSlot(deleteSlotId);
-      toast.success(language === 'hu' ? 'Időpont törölve!' : 'Time slot deleted!');
+      toast.success(t('operator.calendar.slotDeleted'));
       setDeleteSlotId(null);
       if (viewMode === 'week') {
         fetchWeekSlots(currentDate);
@@ -104,14 +104,13 @@ const OperatorCalendar = () => {
         fetchMonthSlots(currentDate);
       }
     } catch (error) {
-      toast.error(language === 'hu' ? 'Hiba történt' : 'An error occurred');
+      toast.error(t('error.generic'));
     }
   };
 
   const handleEditSlot = (slot: TimeSlot) => {
-    // For now, just log - could open edit dialog
     console.log('Edit slot:', slot);
-    toast.info(language === 'hu' ? 'Szerkesztés hamarosan...' : 'Edit coming soon...');
+    toast.info(t('operator.calendar.editSoon'));
   };
 
   const handleDayClick = (date: Date) => {
@@ -124,12 +123,10 @@ const OperatorCalendar = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">
-            {language === 'hu' ? 'Időpont kezelés' : 'Schedule Management'}
+            {t('operator.calendar.title')}
           </h1>
           <p className="text-muted-foreground">
-            {language === 'hu'
-              ? 'Repülési időpontok létrehozása és kezelése'
-              : 'Create and manage flight time slots'}
+            {t('operator.calendar.subtitle')}
           </p>
         </div>
 
@@ -138,18 +135,18 @@ const OperatorCalendar = () => {
             <TabsList>
               <TabsTrigger value="week" className="gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                {language === 'hu' ? 'Hét' : 'Week'}
+                {t('operator.calendar.week')}
               </TabsTrigger>
               <TabsTrigger value="month" className="gap-2">
                 <Grid3X3 className="h-4 w-4" />
-                {language === 'hu' ? 'Hónap' : 'Month'}
+                {t('operator.calendar.month')}
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            {language === 'hu' ? 'Új időpont' : 'New Slot'}
+            {t('operator.calendar.newSlot')}
           </Button>
         </div>
       </div>
@@ -188,20 +185,18 @@ const OperatorCalendar = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {language === 'hu' ? 'Időpont törlése' : 'Delete Time Slot'}
+              {t('operator.calendar.deleteTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {language === 'hu'
-                ? 'Biztosan törölni szeretnéd ezt az időpontot? Ez a művelet nem vonható vissza.'
-                : 'Are you sure you want to delete this time slot? This action cannot be undone.'}
+              {t('operator.calendar.deleteDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>
-              {language === 'hu' ? 'Mégse' : 'Cancel'}
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteSlot}>
-              {language === 'hu' ? 'Törlés' : 'Delete'}
+              {t('analytics.cancelled')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
