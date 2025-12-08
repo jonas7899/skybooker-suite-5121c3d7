@@ -8,7 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-
+import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import Index from "./pages/Index";
 import Rolam from "./pages/Rolam";
 import Hirek from "./pages/Hirek";
@@ -76,14 +76,16 @@ const App = () => (
               {/* Admin Login */}
               <Route path="/admin/login" element={<AdminLogin />} />
 
-              {/* Admin Routes (no menu link, only URL access) */}
-              <Route path="/admin" element={<DashboardLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="operators" element={<AdminOperators />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="subscriptions" element={<AdminSubscriptions />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="settings" element={<AdminSettings />} />
+              {/* Admin Routes (protected, super_admin only) */}
+              <Route path="/admin" element={<AdminProtectedRoute />}>
+                <Route element={<DashboardLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="operators" element={<AdminOperators />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="subscriptions" element={<AdminSubscriptions />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
               </Route>
 
               {/* Operator Routes */}
