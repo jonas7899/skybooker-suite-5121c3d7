@@ -43,36 +43,36 @@ const DashboardLayout: React.FC = () => {
     switch (userRole.role) {
       case 'super_admin':
         return [
-          { href: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-          { href: '/admin/operators', label: 'Operators', icon: <Building2 className="w-5 h-5" /> },
-          { href: '/admin/users', label: 'Users', icon: <Users className="w-5 h-5" /> },
-          { href: '/admin/subscriptions', label: 'Subscriptions', icon: <CreditCard className="w-5 h-5" /> },
-          { href: '/admin/analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
-          { href: '/admin/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+          { href: '/admin', label: t('dashboard.nav.dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
+          { href: '/admin/operators', label: t('dashboard.nav.operators'), icon: <Building2 className="w-5 h-5" /> },
+          { href: '/admin/users', label: t('dashboard.nav.users'), icon: <Users className="w-5 h-5" /> },
+          { href: '/admin/subscriptions', label: t('dashboard.nav.subscriptions'), icon: <CreditCard className="w-5 h-5" /> },
+          { href: '/admin/analytics', label: t('dashboard.nav.analytics'), icon: <BarChart3 className="w-5 h-5" /> },
+          { href: '/admin/settings', label: t('dashboard.nav.settings'), icon: <Settings className="w-5 h-5" /> },
         ];
       case 'operator_admin':
         return [
-          { href: '/operator', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-          { href: '/operator/calendar', label: 'Schedule', icon: <Calendar className="w-5 h-5" /> },
-          { href: '/operator/flights', label: 'Flights', icon: <Plane className="w-5 h-5" /> },
-          { href: '/operator/bookings', label: 'Bookings', icon: <Ticket className="w-5 h-5" /> },
-          { href: '/operator/staff', label: 'Staff', icon: <UserCog className="w-5 h-5" /> },
-          { href: '/operator/analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
-          { href: '/operator/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+          { href: '/operator', label: t('dashboard.nav.dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
+          { href: '/operator/calendar', label: t('dashboard.nav.calendar'), icon: <Calendar className="w-5 h-5" /> },
+          { href: '/operator/flights', label: t('dashboard.nav.flights'), icon: <Plane className="w-5 h-5" /> },
+          { href: '/operator/bookings', label: t('dashboard.nav.bookings'), icon: <Ticket className="w-5 h-5" /> },
+          { href: '/operator/staff', label: t('dashboard.nav.staff'), icon: <UserCog className="w-5 h-5" /> },
+          { href: '/operator/analytics', label: t('dashboard.nav.analytics'), icon: <BarChart3 className="w-5 h-5" /> },
+          { href: '/operator/settings', label: t('dashboard.nav.settings'), icon: <Settings className="w-5 h-5" /> },
         ];
       case 'operator_staff':
         return [
-          { href: '/operator', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-          { href: '/operator/flights', label: 'Flights', icon: <Plane className="w-5 h-5" /> },
-          { href: '/operator/bookings', label: 'Bookings', icon: <Calendar className="w-5 h-5" /> },
-          { href: '/operator/analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
+          { href: '/operator', label: t('dashboard.nav.dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
+          { href: '/operator/flights', label: t('dashboard.nav.flights'), icon: <Plane className="w-5 h-5" /> },
+          { href: '/operator/bookings', label: t('dashboard.nav.bookings'), icon: <Calendar className="w-5 h-5" /> },
+          { href: '/operator/analytics', label: t('dashboard.nav.analytics'), icon: <BarChart3 className="w-5 h-5" /> },
         ];
       case 'user':
         return [
-          { href: '/dashboard', label: 'My Flights', icon: <Ticket className="w-5 h-5" /> },
-          { href: '/dashboard/bookings', label: 'Bookings', icon: <Calendar className="w-5 h-5" /> },
-          { href: '/dashboard/favorites', label: 'Favorites', icon: <Heart className="w-5 h-5" /> },
-          { href: '/dashboard/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+          { href: '/dashboard', label: t('dashboard.nav.myFlights'), icon: <Ticket className="w-5 h-5" /> },
+          { href: '/dashboard/bookings', label: t('dashboard.nav.bookings'), icon: <Calendar className="w-5 h-5" /> },
+          { href: '/dashboard/favorites', label: t('dashboard.nav.favorites'), icon: <Heart className="w-5 h-5" /> },
+          { href: '/dashboard/settings', label: t('dashboard.nav.settings'), icon: <Settings className="w-5 h-5" /> },
         ];
       default:
         return [];
@@ -88,16 +88,16 @@ const DashboardLayout: React.FC = () => {
 
   const getRoleBadge = () => {
     if (!userRole) return null;
-    const badges: Record<string, { label: string; className: string }> = {
-      super_admin: { label: 'Super Admin', className: 'bg-destructive/10 text-destructive' },
-      operator_admin: { label: 'Operator Admin', className: 'bg-primary/10 text-primary' },
-      operator_staff: { label: 'Staff', className: 'bg-accent/10 text-accent' },
-      user: { label: 'Member', className: 'bg-secondary text-secondary-foreground' },
+    const badges: Record<string, { labelKey: string; className: string }> = {
+      super_admin: { labelKey: 'role.superAdmin', className: 'bg-destructive/10 text-destructive' },
+      operator_admin: { labelKey: 'role.operatorAdmin', className: 'bg-primary/10 text-primary' },
+      operator_staff: { labelKey: 'role.staff', className: 'bg-accent/10 text-accent' },
+      user: { labelKey: 'role.member', className: 'bg-secondary text-secondary-foreground' },
     };
     const badge = badges[userRole.role];
     return badge ? (
       <span className={cn('text-xs px-2 py-1 rounded-full font-medium', badge.className)}>
-        {badge.label}
+        {t(badge.labelKey)}
       </span>
     ) : null;
   };
@@ -180,7 +180,7 @@ const DashboardLayout: React.FC = () => {
               onClick={handleLogout}
             >
               <LogOut className="w-5 h-5" />
-              Sign Out
+              {t('dashboard.nav.signOut')}
             </Button>
           </div>
         </div>
