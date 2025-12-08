@@ -1,15 +1,18 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const OperatorBookings: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-          Bookings
+          {t('operator.bookings.title')}
         </h1>
         <p className="text-muted-foreground">
-          View and manage customer bookings
+          {t('operator.bookings.subtitle')}
         </p>
       </div>
 
@@ -18,10 +21,10 @@ const OperatorBookings: React.FC = () => {
           <Calendar className="w-8 h-8 text-muted-foreground" />
         </div>
         <h2 className="text-xl font-display font-semibold mb-2">
-          No bookings yet
+          {t('operator.bookings.noBookings')}
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Customer bookings will appear here once you start receiving them.
+          {t('operator.bookings.noBookingsDesc')}
         </p>
       </div>
     </div>

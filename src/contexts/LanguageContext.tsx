@@ -322,6 +322,40 @@ export const translations: Translations = {
   'settings.password.validation.minLength': { hu: 'A jelszónak legalább 6 karakter hosszúnak kell lennie', en: 'Password must be at least 6 characters' },
   'settings.password.validation.mismatch': { hu: 'A jelszavak nem egyeznek', en: 'Passwords do not match' },
   'settings.password.validation.wrongCurrent': { hu: 'A jelenlegi jelszó helytelen', en: 'Current password is incorrect' },
+
+  // Operator Bookings
+  'operator.bookings.title': { hu: 'Foglalások', en: 'Bookings' },
+  'operator.bookings.subtitle': { hu: 'Ügyfélfoglalások megtekintése és kezelése', en: 'View and manage customer bookings' },
+  'operator.bookings.noBookings': { hu: 'Még nincs foglalás', en: 'No bookings yet' },
+  'operator.bookings.noBookingsDesc': { hu: 'Az ügyfélfoglalások itt jelennek meg, amint érkeznek.', en: 'Customer bookings will appear here once you start receiving them.' },
+
+  // Operator Calendar
+  'operator.calendar.title': { hu: 'Időpont kezelés', en: 'Schedule Management' },
+  'operator.calendar.subtitle': { hu: 'Repülési időpontok létrehozása és kezelése', en: 'Create and manage flight time slots' },
+  'operator.calendar.week': { hu: 'Hét', en: 'Week' },
+  'operator.calendar.month': { hu: 'Hónap', en: 'Month' },
+  'operator.calendar.newSlot': { hu: 'Új időpont', en: 'New Slot' },
+  'operator.calendar.slotCreated': { hu: 'Időpont létrehozva!', en: 'Time slot created!' },
+  'operator.calendar.slotDeleted': { hu: 'Időpont törölve!', en: 'Time slot deleted!' },
+  'operator.calendar.deleteTitle': { hu: 'Időpont törlése', en: 'Delete Time Slot' },
+  'operator.calendar.deleteDesc': { hu: 'Biztosan törölni szeretnéd ezt az időpontot? Ez a művelet nem vonható vissza.', en: 'Are you sure you want to delete this time slot? This action cannot be undone.' },
+  'operator.calendar.editSoon': { hu: 'Szerkesztés hamarosan...', en: 'Edit coming soon...' },
+
+  // Operator Settings
+  'operator.settings.title': { hu: 'Operátor beállítások', en: 'Operator Settings' },
+  'operator.settings.subtitle': { hu: 'Cég beállítások kezelése', en: 'Manage your company settings' },
+  'operator.settings.companyInfo': { hu: 'Céginformációk', en: 'Company Information' },
+  'operator.settings.companyName': { hu: 'Cégnév', en: 'Company Name' },
+  'operator.settings.companyNamePlaceholder': { hu: 'A cég neve', en: 'Your company name' },
+  'operator.settings.contactEmail': { hu: 'Kapcsolattartási email', en: 'Contact Email' },
+  'operator.settings.phone': { hu: 'Telefonszám', en: 'Phone Number' },
+  'operator.settings.saveChanges': { hu: 'Változások mentése', en: 'Save Changes' },
+  'operator.settings.subscription': { hu: 'Előfizetés', en: 'Subscription' },
+  'operator.settings.subscriptionDesc': { hu: 'Aktuális csomag és számlázási adatok', en: 'Your current plan and billing details' },
+  'operator.settings.professionalPlan': { hu: 'Professzionális csomag', en: 'Professional Plan' },
+  'operator.settings.manage': { hu: 'Kezelés', en: 'Manage' },
+  'operator.settings.accessRestricted': { hu: 'Hozzáférés korlátozva', en: 'Access Restricted' },
+  'operator.settings.noPermission': { hu: 'Nincs jogosultsága az operátor beállítások kezeléséhez. Forduljon az adminisztrátorhoz.', en: "You don't have permission to manage operator settings. Contact your administrator." },
 };
 
 interface LanguageContextType {

@@ -1,12 +1,14 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield } from 'lucide-react';
+import { Shield, Building2, CreditCard } from 'lucide-react';
 
 const OperatorSettings: React.FC = () => {
   const { userRole } = useAuth();
+  const { t } = useLanguage();
   const canManageSettings = userRole?.role === 'operator_admin';
 
   if (!canManageSettings) {
@@ -17,10 +19,10 @@ const OperatorSettings: React.FC = () => {
             <Shield className="w-8 h-8 text-destructive" />
           </div>
           <h2 className="text-xl font-display font-semibold mb-2">
-            Access Restricted
+            {t('operator.settings.accessRestricted')}
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            You don't have permission to manage operator settings. Contact your administrator.
+            {t('operator.settings.noPermission')}
           </p>
         </div>
       </div>
@@ -31,51 +33,57 @@ const OperatorSettings: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-          Operator Settings
+          {t('operator.settings.title')}
         </h1>
         <p className="text-muted-foreground">
-          Manage your company settings
+          {t('operator.settings.subtitle')}
         </p>
       </div>
 
       <div className="bg-card rounded-2xl border border-border p-6 md:p-8 max-w-2xl">
-        <h2 className="text-lg font-semibold mb-6">Company Information</h2>
+        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-primary" />
+          {t('operator.settings.companyInfo')}
+        </h2>
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="companyName">Company Name</Label>
-            <Input id="companyName" placeholder="Your company name" />
+            <Label htmlFor="companyName">{t('operator.settings.companyName')}</Label>
+            <Input id="companyName" placeholder={t('operator.settings.companyNamePlaceholder')} />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="contactEmail">Contact Email</Label>
+            <Label htmlFor="contactEmail">{t('operator.settings.contactEmail')}</Label>
             <Input id="contactEmail" type="email" placeholder="contact@company.com" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone">{t('operator.settings.phone')}</Label>
             <Input id="phone" type="tel" placeholder="+36 1 234 5678" />
           </div>
 
           <div className="pt-4">
-            <Button variant="gradient">Save Changes</Button>
+            <Button variant="gradient">{t('operator.settings.saveChanges')}</Button>
           </div>
         </div>
       </div>
 
       <div className="bg-card rounded-2xl border border-border p-6 md:p-8 max-w-2xl">
-        <h2 className="text-lg font-semibold mb-2">Subscription</h2>
+        <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+          <CreditCard className="w-5 h-5 text-primary" />
+          {t('operator.settings.subscription')}
+        </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Your current plan and billing details
+          {t('operator.settings.subscriptionDesc')}
         </p>
         
         <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold">Professional Plan</p>
-              <p className="text-sm text-muted-foreground">9,999 HUF/month</p>
+              <p className="font-semibold">{t('operator.settings.professionalPlan')}</p>
+              <p className="text-sm text-muted-foreground">9,999 HUF/{t('analytics.month').toLowerCase()}</p>
             </div>
-            <Button variant="outline" size="sm">Manage</Button>
+            <Button variant="outline" size="sm">{t('operator.settings.manage')}</Button>
           </div>
         </div>
       </div>
