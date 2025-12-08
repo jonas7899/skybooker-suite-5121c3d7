@@ -12,12 +12,22 @@ export const useNotifications = () => {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select(`
+          *,
+          booking:bookings(
+            id,
+            time_slot:flight_time_slots(slot_date, start_time),
+            flight_package:flight_packages(name)
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      const mapped = (data || []) as Notification[];
+      const mapped = (data || []).map(n => ({
+        ...n,
+        booking: n.booking || null
+      })) as Notification[];
       setNotifications(mapped);
       setUnreadCount(mapped.filter(n => !n.is_read).length);
     } catch (error) {
