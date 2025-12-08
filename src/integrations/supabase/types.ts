@@ -538,25 +538,70 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          is_bootstrap: boolean
+          phone: string | null
+          rejected_until: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id: string
+          is_bootstrap?: boolean
+          phone?: string | null
+          rejected_until?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          is_bootstrap?: boolean
+          phone?: string | null
+          rejected_until?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           id: string
           operator_id: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           id?: string
           operator_id?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           id?: string
           operator_id?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -631,6 +676,13 @@ export type Database = {
       booking_status: "pending" | "confirmed" | "cancelled"
       discount_condition: "always" | "weekday" | "weekend" | "specific_days"
       discount_type: "percentage" | "fixed_amount"
+      profile_status:
+        | "bootstrap"
+        | "pending"
+        | "active"
+        | "rejected"
+        | "inactive"
+        | "suspended"
       time_slot_status: "available" | "booked" | "closed"
     }
     CompositeTypes: {
@@ -763,6 +815,14 @@ export const Constants = {
       booking_status: ["pending", "confirmed", "cancelled"],
       discount_condition: ["always", "weekday", "weekend", "specific_days"],
       discount_type: ["percentage", "fixed_amount"],
+      profile_status: [
+        "bootstrap",
+        "pending",
+        "active",
+        "rejected",
+        "inactive",
+        "suspended",
+      ],
       time_slot_status: ["available", "booked", "closed"],
     },
   },
