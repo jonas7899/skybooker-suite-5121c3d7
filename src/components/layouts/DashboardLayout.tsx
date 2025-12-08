@@ -28,16 +28,16 @@ interface NavItem {
 }
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, userRole, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Navigation items based on user role
   const getNavItems = (): NavItem[] => {
-    if (!user) return [];
+    if (!userRole) return [];
 
-    switch (user.role) {
+    switch (userRole.role) {
       case 'super_admin':
         return [
           { href: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -78,25 +78,25 @@ const DashboardLayout: React.FC = () => {
 
   const navItems = getNavItems();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
   const getRoleBadge = () => {
-    if (!user) return null;
+    if (!userRole) return null;
     const badges: Record<string, { label: string; className: string }> = {
       super_admin: { label: 'Super Admin', className: 'bg-destructive/10 text-destructive' },
       operator_admin: { label: 'Operator Admin', className: 'bg-primary/10 text-primary' },
       operator_staff: { label: 'Staff', className: 'bg-accent/10 text-accent' },
       user: { label: 'Member', className: 'bg-secondary text-secondary-foreground' },
     };
-    const badge = badges[user.role];
-    return (
+    const badge = badges[userRole.role];
+    return badge ? (
       <span className={cn('text-xs px-2 py-1 rounded-full font-medium', badge.className)}>
         {badge.label}
       </span>
-    );
+    ) : null;
   };
 
   return (
@@ -132,12 +132,12 @@ const DashboardLayout: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center">
                 <span className="text-sm font-medium text-sidebar-foreground">
-                  {user?.name?.charAt(0) || 'U'}
+                  {profile?.full_name?.charAt(0) || 'U'}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  {user?.name || 'User'}
+                  {profile?.full_name || 'User'}
                 </p>
                 <p className="text-xs text-sidebar-foreground/60 truncate">
                   {user?.email}

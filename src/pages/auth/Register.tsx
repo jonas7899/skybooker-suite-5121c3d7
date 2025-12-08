@@ -1,29 +1,110 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plane, User, Building2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-type AccountType = 'user' | 'operator';
+import { Plane, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Register: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const initialType = searchParams.get('type') === 'operator' ? 'operator' : 'user';
-  
-  const [accountType, setAccountType] = useState<AccountType>(initialType);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
-    companyName: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { signUp } = useAuth();
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validatePhone = (phone: string): boolean => {
+    if (!phone) return false;
+    // International phone format: starts with +, followed by country code and number
+    const phoneRegex = /^\+[1-9][\d\s]{7,17}$/;
+    const cleanPhone = phone.replace(/\s/g, '');
+    return phoneRegex.test(cleanPhone);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Registration logic will be implemented later
-    console.log('Register:', { accountType, ...formData });
+    setIsLoading(true);
+
+    // Validate phone
+    if (!validatePhone(formData.phone)) {
+      toast({
+        title: language === 'hu' ? 'Érvénytelen telefonszám' : 'Invalid phone number',
+        description: language === 'hu' 
+          ? 'Kérlek add meg a telefonszámot nemzetközi formátumban (pl. +36 30 123 4567)'
+          : 'Please enter your phone number in international format (e.g., +36 30 123 4567)',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate password
+    if (formData.password.length < 6) {
+      toast({
+        title: language === 'hu' ? 'Túl rövid jelszó' : 'Password too short',
+        description: language === 'hu'
+          ? 'A jelszónak legalább 6 karakter hosszúnak kell lennie.'
+          : 'Password must be at least 6 characters long.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        formData.name,
+        formData.phone.replace(/\s/g, '') // Remove spaces from phone
+      );
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast({
+            title: language === 'hu' ? 'Email már használatban' : 'Email already in use',
+            description: language === 'hu'
+              ? 'Ez az email cím már regisztrálva van.'
+              : 'This email address is already registered.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: language === 'hu' ? 'Regisztrációs hiba' : 'Registration error',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
+        return;
+      }
+
+      toast({
+        title: language === 'hu' ? 'Sikeres regisztráció!' : 'Registration successful!',
+        description: language === 'hu'
+          ? 'A fiókod jóváhagyásra vár. Értesítünk, ha aktiválják.'
+          : 'Your account is pending approval. We will notify you when it is activated.',
+      });
+
+      navigate('/belepes');
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: language === 'hu' ? 'Hiba' : 'Error',
+        description: language === 'hu' ? 'Váratlan hiba történt' : 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -37,94 +118,38 @@ const Register: React.FC = () => {
             </div>
           </Link>
           <h1 className="text-2xl font-display font-bold mt-6 mb-2">
-            Create your account
+            {language === 'hu' ? 'Fiók létrehozása' : 'Create your account'}
           </h1>
           <p className="text-muted-foreground">
-            Join SkyBook and start your journey
+            {language === 'hu' 
+              ? 'Regisztrálj és foglald le repülésedet!'
+              : 'Register and book your flight!'}
           </p>
         </div>
 
         {/* Form */}
         <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
-          {/* Account Type Selector */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => setAccountType('user')}
-              className={cn(
-                "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                accountType === 'user'
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              )}
-            >
-              <User className={cn(
-                "w-6 h-6",
-                accountType === 'user' ? "text-primary" : "text-muted-foreground"
-              )} />
-              <span className={cn(
-                "text-sm font-medium",
-                accountType === 'user' ? "text-foreground" : "text-muted-foreground"
-              )}>
-                Traveler
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setAccountType('operator')}
-              className={cn(
-                "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                accountType === 'operator'
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              )}
-            >
-              <Building2 className={cn(
-                "w-6 h-6",
-                accountType === 'operator' ? "text-primary" : "text-muted-foreground"
-              )} />
-              <span className={cn(
-                "text-sm font-medium",
-                accountType === 'operator' ? "text-foreground" : "text-muted-foreground"
-              )}>
-                Operator
-              </span>
-            </button>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">
+                {language === 'hu' ? 'Teljes név' : 'Full Name'}
+              </Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder={language === 'hu' ? 'Minta János' : 'John Doe'}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
 
-            {accountType === 'operator' && (
-              <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  type="text"
-                  placeholder="Blue Skies Aviation"
-                  value={formData.companyName}
-                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  required
-                />
-              </div>
-            )}
-
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="pelda@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -132,7 +157,26 @@ const Register: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="phone">
+                {language === 'hu' ? 'Telefonszám' : 'Phone Number'}
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+36 30 123 4567"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                {language === 'hu' 
+                  ? 'Nemzetközi formátum országkóddal (pl. +36, +1, +44)'
+                  : 'International format with country code (e.g., +36, +1, +44)'}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -140,7 +184,13 @@ const Register: React.FC = () => {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
+                minLength={6}
               />
+              <p className="text-xs text-muted-foreground">
+                {language === 'hu' 
+                  ? 'Minimum 6 karakter'
+                  : 'Minimum 6 characters'}
+              </p>
             </div>
 
             <Button
@@ -148,21 +198,29 @@ const Register: React.FC = () => {
               variant="gradient"
               className="w-full"
               size="lg"
+              disabled={isLoading}
             >
-              {accountType === 'operator' ? 'Start Free Trial' : 'Create Account'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {language === 'hu' ? 'Regisztráció...' : 'Registering...'}
+                </>
+              ) : (
+                language === 'hu' ? 'Regisztráció' : 'Create Account'
+              )}
             </Button>
 
-            {accountType === 'operator' && (
-              <p className="text-xs text-muted-foreground text-center">
-                14-day free trial, then 9,999 HUF/month
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground text-center mt-4">
+              {language === 'hu'
+                ? 'A regisztrációd jóváhagyásra vár, miután a stáb ellenőrizte.'
+                : 'Your registration will be pending approval after staff verification.'}
+            </p>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Sign in
+            {t('auth.hasAccount')}{' '}
+            <Link to="/belepes" className="text-primary font-medium hover:underline">
+              {t('auth.signIn')}
             </Link>
           </p>
         </div>
