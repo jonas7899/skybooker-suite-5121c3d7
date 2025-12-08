@@ -25,7 +25,11 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 import OperatorCalendar from "./pages/operator/OperatorCalendar";
+import OperatorBookings from "./pages/operator/OperatorBookings";
 import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
+import BookingCheckout from "./pages/booking/BookingCheckout";
+
+import UserBookingsPage from "./pages/dashboard/UserBookingsPage";
 
 import RoleSwitcher from "./components/RoleSwitcher";
 
@@ -51,9 +55,17 @@ const App = () => (
                 <Route path="/idopontok" element={<AvailabilityCalendar />} />
               </Route>
 
+              {/* Booking Flow */}
+              <Route path="/foglalas" element={<BookingCheckout />} />
+
               {/* Auth Routes */}
               <Route path="/belepes" element={<Login />} />
               <Route path="/regisztracio" element={<Register />} />
+
+              {/* User Dashboard Routes */}
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route path="bookings" element={<UserBookingsPage />} />
+              </Route>
 
               {/* Admin Routes (no menu link, only URL access) */}
               <Route path="/admin" element={<DashboardLayout />}>
@@ -68,6 +80,7 @@ const App = () => (
               {/* Operator Routes */}
               <Route path="/operator" element={<DashboardLayout />}>
                 <Route path="calendar" element={<OperatorCalendar />} />
+                <Route path="bookings" element={<OperatorBookings />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

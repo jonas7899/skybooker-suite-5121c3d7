@@ -1,30 +1,21 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTimeSlots } from '@/hooks/useTimeSlots';
 import { WeeklyCalendar } from '@/components/scheduling/WeeklyCalendar';
 import { MonthlyCalendar } from '@/components/scheduling/MonthlyCalendar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarIcon, Grid3X3, Plane } from 'lucide-react';
-import { toast } from 'sonner';
 import { TimeSlot } from '@/types/scheduling';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { hu, enUS } from 'date-fns/locale';
 
 const AvailabilityCalendar = () => {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const locale = language === 'hu' ? hu : enUS;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
-  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
 
   const {
     timeSlots,
@@ -43,17 +34,7 @@ const AvailabilityCalendar = () => {
   }, [currentDate, viewMode]);
 
   const handleBookSlot = (slot: TimeSlot) => {
-    setSelectedSlot(slot);
-  };
-
-  const confirmBooking = () => {
-    // In real app, this would navigate to booking flow or open booking form
-    toast.success(
-      language === 'hu'
-        ? 'Foglalás folyamatban... (Bejelentkezés szükséges)'
-        : 'Booking in progress... (Login required)'
-    );
-    setSelectedSlot(null);
+    navigate(`/foglalas?slot=${slot.id}`);
   };
 
   const handleDayClick = (date: Date) => {
@@ -130,48 +111,6 @@ const AvailabilityCalendar = () => {
               onDayClick={handleDayClick}
             />
           )}
-
-          <Dialog open={!!selectedSlot} onOpenChange={() => setSelectedSlot(null)}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {language === 'hu' ? 'Foglalás megerősítése' : 'Confirm Booking'}
-                </DialogTitle>
-                <DialogDescription>
-                  {selectedSlot && (
-                    <div className="space-y-2 mt-4">
-                      <p>
-                        <strong>{language === 'hu' ? 'Dátum:' : 'Date:'}</strong>{' '}
-                        {format(new Date(selectedSlot.slot_date), 'PPP', { locale })}
-                      </p>
-                      <p>
-                        <strong>{language === 'hu' ? 'Időpont:' : 'Time:'}</strong>{' '}
-                        {selectedSlot.start_time}
-                      </p>
-                      <p>
-                        <strong>{language === 'hu' ? 'Időtartam:' : 'Duration:'}</strong>{' '}
-                        {selectedSlot.duration_minutes} {language === 'hu' ? 'perc' : 'minutes'}
-                      </p>
-                      {selectedSlot.flight_package && (
-                        <p>
-                          <strong>{language === 'hu' ? 'Csomag:' : 'Package:'}</strong>{' '}
-                          {selectedSlot.flight_package.name}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelectedSlot(null)}>
-                  {language === 'hu' ? 'Mégse' : 'Cancel'}
-                </Button>
-                <Button onClick={confirmBooking}>
-                  {language === 'hu' ? 'Foglalás' : 'Book Now'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </div>
