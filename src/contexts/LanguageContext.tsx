@@ -306,6 +306,22 @@ export const translations: Translations = {
   'settings.validation.nameRequired': { hu: 'A név megadása kötelező', en: 'Name is required' },
   'settings.validation.nameMax': { hu: 'A név maximum 100 karakter lehet', en: 'Name must be less than 100 characters' },
   'settings.validation.phoneInvalid': { hu: 'Érvénytelen telefonszám formátum', en: 'Invalid phone number format' },
+
+  // Password Change
+  'settings.password.title': { hu: 'Jelszó módosítása', en: 'Change Password' },
+  'settings.password.current': { hu: 'Jelenlegi jelszó', en: 'Current Password' },
+  'settings.password.new': { hu: 'Új jelszó', en: 'New Password' },
+  'settings.password.confirm': { hu: 'Új jelszó megerősítése', en: 'Confirm New Password' },
+  'settings.password.change': { hu: 'Jelszó módosítása', en: 'Change Password' },
+  'settings.password.changing': { hu: 'Módosítás...', en: 'Changing...' },
+  'settings.password.success': { hu: 'Jelszó módosítva', en: 'Password Changed' },
+  'settings.password.successDesc': { hu: 'A jelszavad sikeresen módosítva lett.', en: 'Your password has been changed successfully.' },
+  'settings.password.error': { hu: 'Hiba történt', en: 'Error' },
+  'settings.password.errorDesc': { hu: 'Nem sikerült módosítani a jelszót.', en: 'Failed to change password.' },
+  'settings.password.validation.required': { hu: 'A jelszó megadása kötelező', en: 'Password is required' },
+  'settings.password.validation.minLength': { hu: 'A jelszónak legalább 6 karakter hosszúnak kell lennie', en: 'Password must be at least 6 characters' },
+  'settings.password.validation.mismatch': { hu: 'A jelszavak nem egyeznek', en: 'Passwords do not match' },
+  'settings.password.validation.wrongCurrent': { hu: 'A jelenlegi jelszó helytelen', en: 'Current password is incorrect' },
 };
 
 interface LanguageContextType {

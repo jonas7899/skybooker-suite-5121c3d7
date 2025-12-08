@@ -7,16 +7,31 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
-import { Loader2, User, Mail, Phone } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 
 const UserSettings: React.FC = () => {
   const { user, profile, refreshProfile } = useAuth();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   
+  // Profile form state
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ fullName?: string; phone?: string }>({});
+
+  // Password form state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<{ 
+    currentPassword?: string; 
+    newPassword?: string; 
+    confirmPassword?: string 
+  }>({});
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Update form when profile loads
   useEffect(() => {
@@ -26,7 +41,7 @@ const UserSettings: React.FC = () => {
     }
   }, [profile]);
 
-  // Validation schema
+  // Profile validation schema
   const profileSchema = z.object({
     fullName: z
       .string()
@@ -43,11 +58,26 @@ const UserSettings: React.FC = () => {
       ),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Password validation schema
+  const passwordSchema = z.object({
+    currentPassword: z
+      .string()
+      .min(1, { message: t('settings.password.validation.required') }),
+    newPassword: z
+      .string()
+      .min(6, { message: t('settings.password.validation.minLength') }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: t('settings.password.validation.required') }),
+  }).refine((data) => data.newPassword === data.confirmPassword, {
+    message: t('settings.password.validation.mismatch'),
+    path: ['confirmPassword'],
+  });
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
-    // Validate inputs
     const result = profileSchema.safeParse({ fullName, phone: phone || undefined });
     
     if (!result.success) {
@@ -93,9 +123,69 @@ const UserSettings: React.FC = () => {
     }
   };
 
-  const hasChanges = 
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordErrors({});
+
+    const result = passwordSchema.safeParse({ currentPassword, newPassword, confirmPassword });
+    
+    if (!result.success) {
+      const fieldErrors: { currentPassword?: string; newPassword?: string; confirmPassword?: string } = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0] as keyof typeof fieldErrors;
+        fieldErrors[field] = err.message;
+      });
+      setPasswordErrors(fieldErrors);
+      return;
+    }
+
+    setIsPasswordLoading(true);
+
+    try {
+      // First verify current password by trying to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        setPasswordErrors({ currentPassword: t('settings.password.validation.wrongCurrent') });
+        setIsPasswordLoading(false);
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Clear form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      
+      toast.success(t('settings.password.success'), {
+        description: t('settings.password.successDesc'),
+      });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(t('settings.password.error'), {
+        description: t('settings.password.errorDesc'),
+      });
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  const hasProfileChanges = 
     fullName !== (profile?.full_name || '') || 
     phone !== (profile?.phone || '');
+
+  const hasPasswordInput = currentPassword && newPassword && confirmPassword;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -108,7 +198,8 @@ const UserSettings: React.FC = () => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-card rounded-2xl border border-border p-6 md:p-8 max-w-2xl">
+      {/* Profile Information Form */}
+      <form onSubmit={handleProfileSubmit} className="bg-card rounded-2xl border border-border p-6 md:p-8 max-w-2xl">
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <User className="w-5 h-5 text-primary" />
           {t('settings.profileInfo')}
@@ -175,7 +266,7 @@ const UserSettings: React.FC = () => {
             <Button 
               type="submit" 
               variant="gradient" 
-              disabled={isLoading || !hasChanges}
+              disabled={isLoading || !hasProfileChanges}
               className="min-w-[180px]"
             >
               {isLoading ? (
@@ -185,6 +276,112 @@ const UserSettings: React.FC = () => {
                 </>
               ) : (
                 t('settings.saveChanges')
+              )}
+            </Button>
+          </div>
+        </div>
+      </form>
+
+      {/* Password Change Form */}
+      <form onSubmit={handlePasswordSubmit} className="bg-card rounded-2xl border border-border p-6 md:p-8 max-w-2xl">
+        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+          <Lock className="w-5 h-5 text-primary" />
+          {t('settings.password.title')}
+        </h2>
+        
+        <div className="space-y-5">
+          {/* Current Password */}
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">
+              {t('settings.password.current')}
+            </Label>
+            <div className="relative">
+              <Input 
+                id="currentPassword" 
+                type={showCurrentPassword ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className={passwordErrors.currentPassword ? 'border-destructive pr-10' : 'pr-10'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {passwordErrors.currentPassword && (
+              <p className="text-sm text-destructive">{passwordErrors.currentPassword}</p>
+            )}
+          </div>
+
+          {/* New Password */}
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">
+              {t('settings.password.new')}
+            </Label>
+            <div className="relative">
+              <Input 
+                id="newPassword" 
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className={passwordErrors.newPassword ? 'border-destructive pr-10' : 'pr-10'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {passwordErrors.newPassword && (
+              <p className="text-sm text-destructive">{passwordErrors.newPassword}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">
+              {t('settings.password.confirm')}
+            </Label>
+            <div className="relative">
+              <Input 
+                id="confirmPassword" 
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={passwordErrors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {passwordErrors.confirmPassword && (
+              <p className="text-sm text-destructive">{passwordErrors.confirmPassword}</p>
+            )}
+          </div>
+
+          <div className="pt-4">
+            <Button 
+              type="submit" 
+              variant="outline" 
+              disabled={isPasswordLoading || !hasPasswordInput}
+              className="min-w-[180px]"
+            >
+              {isPasswordLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('settings.password.changing')}
+                </>
+              ) : (
+                t('settings.password.change')
               )}
             </Button>
           </div>
