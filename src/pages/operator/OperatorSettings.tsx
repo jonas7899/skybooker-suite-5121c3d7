@@ -3,12 +3,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { hasPermission } from '@/types/auth';
 import { Shield } from 'lucide-react';
 
 const OperatorSettings: React.FC = () => {
-  const { user } = useAuth();
-  const canManageSettings = user ? hasPermission(user.role, 'manage_operator_settings') : false;
+  const { userRole } = useAuth();
+  const canManageSettings = userRole?.role === 'operator_admin';
 
   if (!canManageSettings) {
     return (

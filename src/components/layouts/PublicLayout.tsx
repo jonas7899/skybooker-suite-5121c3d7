@@ -12,7 +12,7 @@ const PublicLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { t } = useLanguage();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, signOut } = useAuth();
   const windfinderRef = useRef<HTMLDivElement>(null);
 
   // Public paths where WindFinder widget should be displayed
@@ -86,7 +86,7 @@ const PublicLayout: React.FC = () => {
             <div className="hidden md:flex items-center gap-4">
               <LanguageSwitcher />
               {isAuthenticated ? (
-                <Button variant="outline" size="sm" onClick={logout}>
+                <Button variant="outline" size="sm" onClick={() => signOut()}>
                   {t('auth.logout')}
                 </Button>
               ) : (
@@ -137,7 +137,7 @@ const PublicLayout: React.FC = () => {
             <div className="flex items-center gap-2 pt-4 border-t border-border">
               <LanguageSwitcher />
               {isAuthenticated ? (
-                <Button variant="outline" size="sm" onClick={logout} className="flex-1">
+                <Button variant="outline" size="sm" onClick={() => signOut()} className="flex-1">
                   {t('auth.logout')}
                 </Button>
               ) : (

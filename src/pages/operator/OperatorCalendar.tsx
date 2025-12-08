@@ -24,7 +24,7 @@ import {
 
 const OperatorCalendar = () => {
   const { language } = useLanguage();
-  const { user } = useAuth();
+  const { userRole } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -32,8 +32,8 @@ const OperatorCalendar = () => {
   const [flightPackages, setFlightPackages] = useState<FlightPackage[]>([]);
   const [deleteSlotId, setDeleteSlotId] = useState<string | null>(null);
 
-  // Mock operator ID - in real app, get from user context
-  const operatorId = user?.operatorId || 'demo-operator';
+  // Get operator ID from user role
+  const operatorId = userRole?.operator_id || 'demo-operator';
 
   const {
     timeSlots,

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const UserDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
   const quickStats = [
     { label: 'Upcoming Flights', value: '0', icon: <Ticket className="w-5 h-5" /> },
@@ -18,7 +18,7 @@ const UserDashboard: React.FC = () => {
       {/* Welcome Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-          Welcome back, {user?.name?.split(' ')[0]}!
+          Welcome back, {profile?.full_name?.split(' ')[0] || 'User'}!
         </h1>
         <p className="text-muted-foreground">
           Ready for your next adventure?

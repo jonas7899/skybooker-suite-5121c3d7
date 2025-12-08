@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Plane, Calendar, Users, TrendingUp } from 'lucide-react';
 
 const OperatorDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { profile, userRole } = useAuth();
 
   const stats = [
     { label: 'Active Flights', value: '0', icon: <Plane className="w-5 h-5" />, trend: '+0%' },
@@ -20,8 +20,8 @@ const OperatorDashboard: React.FC = () => {
           Operator Dashboard
         </h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.name}
-          {user?.role === 'operator_admin' && (
+          Welcome back, {profile?.full_name || 'Operator'}
+          {userRole?.role === 'operator_admin' && (
             <span className="ml-2 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
               Admin
             </span>

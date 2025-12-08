@@ -2,11 +2,10 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Users, Plus, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { hasPermission } from '@/types/auth';
 
 const OperatorStaff: React.FC = () => {
-  const { user } = useAuth();
-  const canManageStaff = user ? hasPermission(user.role, 'manage_operator_staff') : false;
+  const { userRole } = useAuth();
+  const canManageStaff = userRole?.role === 'operator_admin';
 
   if (!canManageStaff) {
     return (

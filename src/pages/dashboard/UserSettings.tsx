@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const UserSettings: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -24,7 +24,7 @@ const UserSettings: React.FC = () => {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input id="name" defaultValue={user?.name} placeholder="Your name" />
+            <Input id="name" defaultValue={profile?.full_name} placeholder="Your name" />
           </div>
           
           <div className="space-y-2">
