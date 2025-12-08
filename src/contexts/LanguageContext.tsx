@@ -285,6 +285,27 @@ export const translations: Translations = {
   'operator.staff.noStaffDesc': { hu: 'Hívjon meg csapattagokat a foglalások és repülések kezeléséhez.', en: 'Invite team members to help manage bookings and flights.' },
   'operator.staff.accessRestricted': { hu: 'Hozzáférés korlátozva', en: 'Access Restricted' },
   'operator.staff.noPermission': { hu: 'Nincs jogosultsága a személyzet kezeléséhez. Forduljon az adminisztrátorhoz.', en: "You don't have permission to manage staff members. Contact your administrator." },
+
+  // User Settings
+  'settings.title': { hu: 'Beállítások', en: 'Settings' },
+  'settings.subtitle': { hu: 'Fiók beállítások kezelése', en: 'Manage your account settings' },
+  'settings.profileInfo': { hu: 'Profil adatok', en: 'Profile Information' },
+  'settings.fullName': { hu: 'Teljes név', en: 'Full Name' },
+  'settings.fullNamePlaceholder': { hu: 'Az Ön neve', en: 'Your name' },
+  'settings.email': { hu: 'Email cím', en: 'Email' },
+  'settings.emailPlaceholder': { hu: 'Az Ön email címe', en: 'Your email' },
+  'settings.emailNote': { hu: 'Az email cím nem módosítható', en: 'Email cannot be changed' },
+  'settings.phone': { hu: 'Telefonszám', en: 'Phone Number' },
+  'settings.phonePlaceholder': { hu: '+36 XX XXX XXXX', en: '+36 XX XXX XXXX' },
+  'settings.saveChanges': { hu: 'Változások mentése', en: 'Save Changes' },
+  'settings.saving': { hu: 'Mentés...', en: 'Saving...' },
+  'settings.success': { hu: 'Profil frissítve', en: 'Profile Updated' },
+  'settings.successDesc': { hu: 'A változtatások sikeresen mentésre kerültek.', en: 'Your changes have been saved successfully.' },
+  'settings.error': { hu: 'Hiba történt', en: 'Error' },
+  'settings.errorDesc': { hu: 'Nem sikerült menteni a változtatásokat.', en: 'Failed to save changes.' },
+  'settings.validation.nameRequired': { hu: 'A név megadása kötelező', en: 'Name is required' },
+  'settings.validation.nameMax': { hu: 'A név maximum 100 karakter lehet', en: 'Name must be less than 100 characters' },
+  'settings.validation.phoneInvalid': { hu: 'Érvénytelen telefonszám formátum', en: 'Invalid phone number format' },
 };
 
 interface LanguageContextType {
