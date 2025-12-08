@@ -39,13 +39,12 @@ import { hu, enUS } from 'date-fns/locale';
 const AdminUsers: React.FC = () => {
   const { pendingUsers, allUsers, isLoading, approveUser, rejectUser, suspendUser, activateUser } = useAdminUsers();
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const t = (hu_text: string, en_text: string) => language === 'hu' ? hu_text : en_text;
   const dateLocale = language === 'hu' ? hu : enUS;
 
   const handleApprove = async (userId: string) => {
@@ -70,16 +69,16 @@ const AdminUsers: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const badges: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      active: { label: t('Aktív', 'Active'), variant: 'default' },
-      pending: { label: t('Várakozó', 'Pending'), variant: 'secondary' },
-      rejected: { label: t('Elutasítva', 'Rejected'), variant: 'destructive' },
-      suspended: { label: t('Felfüggesztve', 'Suspended'), variant: 'destructive' },
-      inactive: { label: t('Inaktív', 'Inactive'), variant: 'outline' },
-      bootstrap: { label: 'Bootstrap', variant: 'outline' },
+    const badges: Record<string, { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+      active: { labelKey: 'admin.users.statusActive', variant: 'default' },
+      pending: { labelKey: 'admin.users.statusPending', variant: 'secondary' },
+      rejected: { labelKey: 'admin.users.statusRejected', variant: 'destructive' },
+      suspended: { labelKey: 'admin.users.statusSuspended', variant: 'destructive' },
+      inactive: { labelKey: 'admin.users.statusInactive', variant: 'outline' },
+      bootstrap: { labelKey: 'admin.users.statusInactive', variant: 'outline' },
     };
-    const badge = badges[status] || { label: status, variant: 'outline' as const };
-    return <Badge variant={badge.variant}>{badge.label}</Badge>;
+    const badge = badges[status] || { labelKey: status, variant: 'outline' as const };
+    return <Badge variant={badge.variant}>{t(badge.labelKey)}</Badge>;
   };
 
   const getRoleBadge = (role?: string) => {
@@ -87,8 +86,8 @@ const AdminUsers: React.FC = () => {
     const roles: Record<string, string> = {
       super_admin: 'Super Admin',
       operator_admin: 'Operator Admin',
-      operator_staff: t('Stáb', 'Staff'),
-      user: t('Felhasználó', 'User'),
+      operator_staff: t('admin.users.roleStaff'),
+      user: t('admin.users.roleUser'),
     };
     return <Badge variant="outline">{roles[role] || role}</Badge>;
   };
@@ -112,10 +111,10 @@ const AdminUsers: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-          {t('Felhasználók', 'Users')}
+          {t('admin.users.title')}
         </h1>
         <p className="text-muted-foreground">
-          {t('Felhasználók kezelése és jóváhagyása', 'Manage and approve users')}
+          {t('admin.users.subtitle')}
         </p>
       </div>
 
@@ -124,13 +123,13 @@ const AdminUsers: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{allUsers.length}</div>
-            <p className="text-xs text-muted-foreground">{t('Összes felhasználó', 'Total Users')}</p>
+            <p className="text-xs text-muted-foreground">{t('admin.users.total')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-yellow-500">{pendingUsers.length}</div>
-            <p className="text-xs text-muted-foreground">{t('Jóváhagyásra vár', 'Pending Approval')}</p>
+            <p className="text-xs text-muted-foreground">{t('admin.users.pendingApproval')}</p>
           </CardContent>
         </Card>
         <Card>
@@ -138,7 +137,7 @@ const AdminUsers: React.FC = () => {
             <div className="text-2xl font-bold text-green-500">
               {allUsers.filter(u => u.status === 'active').length}
             </div>
-            <p className="text-xs text-muted-foreground">{t('Aktív', 'Active')}</p>
+            <p className="text-xs text-muted-foreground">{t('admin.users.active')}</p>
           </CardContent>
         </Card>
         <Card>
@@ -146,7 +145,7 @@ const AdminUsers: React.FC = () => {
             <div className="text-2xl font-bold text-destructive">
               {allUsers.filter(u => u.status === 'suspended' || u.status === 'rejected').length}
             </div>
-            <p className="text-xs text-muted-foreground">{t('Tiltott/Elutasított', 'Suspended/Rejected')}</p>
+            <p className="text-xs text-muted-foreground">{t('admin.users.suspendedRejected')}</p>
           </CardContent>
         </Card>
       </div>
@@ -154,14 +153,14 @@ const AdminUsers: React.FC = () => {
       <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>
           <TabsTrigger value="pending" className="relative">
-            {t('Jóváhagyásra vár', 'Pending')}
+            {t('admin.users.pendingTab')}
             {pendingUsers.length > 0 && (
               <span className="ml-2 bg-yellow-500 text-white text-xs rounded-full px-2 py-0.5">
                 {pendingUsers.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="all">{t('Összes felhasználó', 'All Users')}</TabsTrigger>
+          <TabsTrigger value="all">{t('admin.users.allTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
@@ -169,7 +168,7 @@ const AdminUsers: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
-                {t('Jóváhagyásra váró felhasználók', 'Pending Users')}
+                {t('admin.users.pendingUsers')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -177,7 +176,7 @@ const AdminUsers: React.FC = () => {
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                   <p className="text-muted-foreground">
-                    {t('Nincs jóváhagyásra váró felhasználó', 'No pending users')}
+                    {t('admin.users.noPending')}
                   </p>
                 </div>
               ) : (
@@ -203,7 +202,7 @@ const AdminUsers: React.FC = () => {
                           {pendingUser.id}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {t('Regisztrált:', 'Registered:')}{' '}
+                          {t('admin.users.registered')}{' '}
                           {format(new Date(pendingUser.created_at), 'PPp', { locale: dateLocale })}
                         </p>
                       </div>
@@ -215,7 +214,7 @@ const AdminUsers: React.FC = () => {
                           className="gap-2"
                         >
                           <Check className="w-4 h-4" />
-                          {t('Jóváhagyás', 'Approve')}
+                          {t('admin.users.approve')}
                         </Button>
                         <Button
                           variant="destructive"
@@ -224,7 +223,7 @@ const AdminUsers: React.FC = () => {
                           className="gap-2"
                         >
                           <X className="w-4 h-4" />
-                          {t('Elutasítás', 'Reject')}
+                          {t('admin.users.reject')}
                         </Button>
                       </div>
                     </div>
@@ -240,7 +239,7 @@ const AdminUsers: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                {t('Összes felhasználó', 'All Users')}
+                {t('admin.users.allTab')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -248,7 +247,7 @@ const AdminUsers: React.FC = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder={t('Keresés név vagy telefonszám alapján...', 'Search by name or phone...')}
+                    placeholder={t('admin.users.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -260,7 +259,7 @@ const AdminUsers: React.FC = () => {
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                   <p className="text-muted-foreground">
-                    {t('Nincs találat', 'No results')}
+                    {t('admin.users.noResults')}
                   </p>
                 </div>
               ) : (
@@ -268,12 +267,12 @@ const AdminUsers: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t('Név', 'Name')}</TableHead>
-                        <TableHead>{t('Telefonszám', 'Phone')}</TableHead>
-                        <TableHead>{t('Szerepkör', 'Role')}</TableHead>
-                        <TableHead>{t('Státusz', 'Status')}</TableHead>
-                        <TableHead>{t('Regisztráció', 'Registered')}</TableHead>
-                        <TableHead className="text-right">{t('Műveletek', 'Actions')}</TableHead>
+                        <TableHead>{t('admin.users.name')}</TableHead>
+                        <TableHead>{t('admin.users.phone')}</TableHead>
+                        <TableHead>{t('admin.users.role')}</TableHead>
+                        <TableHead>{t('admin.users.status')}</TableHead>
+                        <TableHead>{t('admin.users.registeredDate')}</TableHead>
+                        <TableHead className="text-right">{t('admin.users.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -305,11 +304,11 @@ const AdminUsers: React.FC = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>{t('Műveletek', 'Actions')}</DropdownMenuLabel>
+                                <DropdownMenuLabel>{t('admin.users.actions')}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 {listUser.status !== 'active' && (
                                   <DropdownMenuItem onClick={() => activateUser(listUser.id)}>
-                                    {t('Aktiválás', 'Activate')}
+                                    {t('admin.users.activate')}
                                   </DropdownMenuItem>
                                 )}
                                 {listUser.status === 'active' && (
@@ -317,7 +316,7 @@ const AdminUsers: React.FC = () => {
                                     onClick={() => suspendUser(listUser.id)}
                                     className="text-destructive"
                                   >
-                                    {t('Felfüggesztés', 'Suspend')}
+                                    {t('admin.users.suspend')}
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>
@@ -339,28 +338,25 @@ const AdminUsers: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t('Regisztráció elutasítása', 'Reject Registration')}
+              {t('admin.users.rejectTitle')}
             </DialogTitle>
             <DialogDescription>
-              {t(
-                'A felhasználó 24 óra múlva újra regisztrálhat.',
-                'The user can register again after 24 hours.'
-              )}
+              {t('admin.users.rejectDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Textarea
-              placeholder={t('Elutasítás indoklása (opcionális)', 'Rejection reason (optional)')}
+              placeholder={t('admin.users.rejectReason')}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-              {t('Mégse', 'Cancel')}
+              {t('admin.users.cancel')}
             </Button>
             <Button variant="destructive" onClick={handleRejectConfirm}>
-              {t('Elutasítás', 'Reject')}
+              {t('admin.users.reject')}
             </Button>
           </DialogFooter>
         </DialogContent>

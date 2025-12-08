@@ -27,15 +27,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAdminOperators } from '@/hooks/useSubscription';
+import { useLanguage } from '@/contexts/LanguageContext';
 import SubscriptionStatusBadge from '@/components/subscription/SubscriptionStatusBadge';
 import { SubscriptionStatus } from '@/types/subscription';
 import { format } from 'date-fns';
-import { hu } from 'date-fns/locale';
+import { hu, enUS } from 'date-fns/locale';
 
 const AdminOperators: React.FC = () => {
   const { operators, isLoading, updateOperatorStatus, extendSubscription } = useAdminOperators();
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  const dateLocale = language === 'hu' ? hu : enUS;
 
   const filteredOperators = operators.filter(op => {
     const matchesSearch = op.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -72,15 +76,15 @@ const AdminOperators: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-            Operátorok kezelése
+            {t('admin.operators.title')}
           </h1>
           <p className="text-muted-foreground">
-            Repülési szolgáltatók és előfizetések kezelése
+            {t('admin.operators.subtitle')}
           </p>
         </div>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
-          Új operátor
+          {t('admin.operators.new')}
         </Button>
       </div>
 
@@ -89,25 +93,25 @@ const AdminOperators: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Összes operátor</p>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.total')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-green-500">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">Aktív előfizetés</p>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.activeSubscription')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-blue-500">{stats.trial}</div>
-            <p className="text-xs text-muted-foreground">Próbaidőszak</p>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.trial')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-destructive">{stats.expired}</div>
-            <p className="text-xs text-muted-foreground">Lejárt</p>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.expired')}</p>
           </CardContent>
         </Card>
       </div>
@@ -117,7 +121,7 @@ const AdminOperators: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5" />
-            Operátorok listája
+            {t('admin.operators.list')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -125,7 +129,7 @@ const AdminOperators: React.FC = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Keresés név vagy slug alapján..."
+                placeholder={t('admin.operators.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -133,14 +137,14 @@ const AdminOperators: React.FC = () => {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Státusz szűrő" />
+                <SelectValue placeholder={t('admin.operators.statusFilter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Összes státusz</SelectItem>
-                <SelectItem value="active">Aktív</SelectItem>
-                <SelectItem value="trial">Próbaidőszak</SelectItem>
-                <SelectItem value="expired">Lejárt</SelectItem>
-                <SelectItem value="cancelled">Lemondva</SelectItem>
+                <SelectItem value="all">{t('admin.operators.allStatus')}</SelectItem>
+                <SelectItem value="active">{t('admin.operators.active')}</SelectItem>
+                <SelectItem value="trial">{t('admin.operators.trial')}</SelectItem>
+                <SelectItem value="expired">{t('admin.operators.expired')}</SelectItem>
+                <SelectItem value="cancelled">{t('admin.operators.cancelled')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -148,18 +152,18 @@ const AdminOperators: React.FC = () => {
           {filteredOperators.length === 0 ? (
             <div className="text-center py-12">
               <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">Nincs találat</p>
+              <p className="text-muted-foreground">{t('admin.operators.noResults')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Operátor</TableHead>
-                    <TableHead>Státusz</TableHead>
-                    <TableHead>Lejárat</TableHead>
-                    <TableHead>Díj</TableHead>
-                    <TableHead className="text-right">Műveletek</TableHead>
+                    <TableHead>{t('admin.operators.operator')}</TableHead>
+                    <TableHead>{t('admin.operators.status')}</TableHead>
+                    <TableHead>{t('admin.operators.expiry')}</TableHead>
+                    <TableHead>{t('admin.operators.fee')}</TableHead>
+                    <TableHead className="text-right">{t('admin.operators.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -179,11 +183,11 @@ const AdminOperators: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {operator.subscription_expires_at 
-                          ? format(new Date(operator.subscription_expires_at), 'yyyy. MMM d.', { locale: hu })
+                          ? format(new Date(operator.subscription_expires_at), 'PP', { locale: dateLocale })
                           : '-'}
                       </TableCell>
                       <TableCell>
-                        {operator.subscription_price_huf?.toLocaleString('hu-HU')} Ft/hó
+                        {operator.subscription_price_huf?.toLocaleString(language === 'hu' ? 'hu-HU' : 'en-US')} {language === 'hu' ? 'Ft/hó' : 'HUF/mo'}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -193,31 +197,31 @@ const AdminOperators: React.FC = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Műveletek</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('admin.operators.actions')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               onClick={() => updateOperatorStatus(operator.id, 'active')}
                             >
-                              Aktiválás
+                              {t('admin.operators.activate')}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => extendSubscription(operator.id, 1)}
                             >
                               <Calendar className="w-4 h-4 mr-2" />
-                              +1 hónap
+                              {t('admin.operators.addMonth')}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => extendSubscription(operator.id, 12)}
                             >
                               <Calendar className="w-4 h-4 mr-2" />
-                              +12 hónap
+                              {t('admin.operators.addYear')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               onClick={() => updateOperatorStatus(operator.id, 'expired')}
                               className="text-destructive"
                             >
-                              Lejártnak jelölés
+                              {t('admin.operators.markExpired')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
