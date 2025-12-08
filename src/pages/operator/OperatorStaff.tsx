@@ -1,10 +1,12 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Users, Plus, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const OperatorStaff: React.FC = () => {
   const { userRole } = useAuth();
+  const { t } = useLanguage();
   const canManageStaff = userRole?.role === 'operator_admin';
 
   if (!canManageStaff) {
@@ -15,10 +17,10 @@ const OperatorStaff: React.FC = () => {
             <Shield className="w-8 h-8 text-destructive" />
           </div>
           <h2 className="text-xl font-display font-semibold mb-2">
-            Access Restricted
+            {t('operator.staff.accessRestricted')}
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            You don't have permission to manage staff members. Contact your administrator.
+            {t('operator.staff.noPermission')}
           </p>
         </div>
       </div>
@@ -30,15 +32,15 @@ const OperatorStaff: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-            Staff Management
+            {t('operator.staff.title')}
           </h1>
           <p className="text-muted-foreground">
-            Manage your team members
+            {t('operator.staff.subtitle')}
           </p>
         </div>
         <Button variant="gradient">
           <Plus className="w-4 h-4" />
-          Invite Staff
+          {t('operator.staff.inviteStaff')}
         </Button>
       </div>
 
@@ -47,10 +49,10 @@ const OperatorStaff: React.FC = () => {
           <Users className="w-8 h-8 text-muted-foreground" />
         </div>
         <h2 className="text-xl font-display font-semibold mb-2">
-          No staff members yet
+          {t('operator.staff.noStaff')}
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Invite team members to help manage bookings and flights.
+          {t('operator.staff.noStaffDesc')}
         </p>
       </div>
     </div>

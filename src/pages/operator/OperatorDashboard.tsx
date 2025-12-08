@@ -1,15 +1,17 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Plane, Calendar, Users, TrendingUp } from 'lucide-react';
 
 const OperatorDashboard: React.FC = () => {
   const { profile, userRole } = useAuth();
+  const { t } = useLanguage();
 
   const stats = [
-    { label: 'Active Flights', value: '0', icon: <Plane className="w-5 h-5" />, trend: '+0%' },
-    { label: 'Total Bookings', value: '0', icon: <Calendar className="w-5 h-5" />, trend: '+0%' },
-    { label: 'Customers', value: '0', icon: <Users className="w-5 h-5" />, trend: '+0%' },
-    { label: 'Revenue', value: '0 HUF', icon: <TrendingUp className="w-5 h-5" />, trend: '+0%' },
+    { label: t('operator.dashboard.activeFlights'), value: '0', icon: <Plane className="w-5 h-5" />, trend: '+0%' },
+    { label: t('operator.dashboard.totalBookings'), value: '0', icon: <Calendar className="w-5 h-5" />, trend: '+0%' },
+    { label: t('operator.dashboard.customers'), value: '0', icon: <Users className="w-5 h-5" />, trend: '+0%' },
+    { label: t('operator.dashboard.revenue'), value: '0 HUF', icon: <TrendingUp className="w-5 h-5" />, trend: '+0%' },
   ];
 
   return (
@@ -17,10 +19,10 @@ const OperatorDashboard: React.FC = () => {
       {/* Welcome Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-          Operator Dashboard
+          {t('operator.dashboard.title')}
         </h1>
         <p className="text-muted-foreground">
-          Welcome back, {profile?.full_name || 'Operator'}
+          {t('operator.dashboard.welcome')}, {profile?.full_name || 'Operator'}
           {userRole?.role === 'operator_admin' && (
             <span className="ml-2 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
               Admin
@@ -51,16 +53,16 @@ const OperatorDashboard: React.FC = () => {
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-2xl border border-border p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Bookings</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('operator.dashboard.recentBookings')}</h2>
           <p className="text-muted-foreground text-sm">
-            No recent bookings to display.
+            {t('operator.dashboard.noRecentBookings')}
           </p>
         </div>
 
         <div className="bg-card rounded-2xl border border-border p-6">
-          <h2 className="text-lg font-semibold mb-4">Upcoming Flights</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('operator.dashboard.upcomingFlights')}</h2>
           <p className="text-muted-foreground text-sm">
-            No upcoming flights scheduled.
+            {t('operator.dashboard.noUpcomingFlights')}
           </p>
         </div>
       </div>

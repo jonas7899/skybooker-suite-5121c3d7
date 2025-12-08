@@ -257,6 +257,34 @@ export const translations: Translations = {
   'admin.users.statusInactive': { hu: 'Inaktív', en: 'Inactive' },
   'admin.users.roleStaff': { hu: 'Stáb', en: 'Staff' },
   'admin.users.roleUser': { hu: 'Felhasználó', en: 'User' },
+
+  // Operator Dashboard
+  'operator.dashboard.title': { hu: 'Operátor Irányítópult', en: 'Operator Dashboard' },
+  'operator.dashboard.welcome': { hu: 'Üdvözöljük', en: 'Welcome back' },
+  'operator.dashboard.activeFlights': { hu: 'Aktív repülések', en: 'Active Flights' },
+  'operator.dashboard.totalBookings': { hu: 'Összes foglalás', en: 'Total Bookings' },
+  'operator.dashboard.customers': { hu: 'Ügyfelek', en: 'Customers' },
+  'operator.dashboard.revenue': { hu: 'Bevétel', en: 'Revenue' },
+  'operator.dashboard.recentBookings': { hu: 'Legutóbbi foglalások', en: 'Recent Bookings' },
+  'operator.dashboard.noRecentBookings': { hu: 'Nincs megjeleníthető foglalás.', en: 'No recent bookings to display.' },
+  'operator.dashboard.upcomingFlights': { hu: 'Közelgő repülések', en: 'Upcoming Flights' },
+  'operator.dashboard.noUpcomingFlights': { hu: 'Nincs beütemezett repülés.', en: 'No upcoming flights scheduled.' },
+
+  // Operator Flights
+  'operator.flights.title': { hu: 'Repülések', en: 'Flights' },
+  'operator.flights.subtitle': { hu: 'Repülési élmények kezelése', en: 'Manage your flight experiences' },
+  'operator.flights.addFlight': { hu: 'Új repülés', en: 'Add Flight' },
+  'operator.flights.noFlights': { hu: 'Még nincs repülés létrehozva', en: 'No flights created yet' },
+  'operator.flights.noFlightsDesc': { hu: 'Hozza létre az első repülési élményt és fogadjon foglalásokat.', en: 'Create your first flight experience and start accepting bookings.' },
+
+  // Operator Staff
+  'operator.staff.title': { hu: 'Személyzet kezelése', en: 'Staff Management' },
+  'operator.staff.subtitle': { hu: 'Csapattagok kezelése', en: 'Manage your team members' },
+  'operator.staff.inviteStaff': { hu: 'Meghívás', en: 'Invite Staff' },
+  'operator.staff.noStaff': { hu: 'Még nincs csapattag', en: 'No staff members yet' },
+  'operator.staff.noStaffDesc': { hu: 'Hívjon meg csapattagokat a foglalások és repülések kezeléséhez.', en: 'Invite team members to help manage bookings and flights.' },
+  'operator.staff.accessRestricted': { hu: 'Hozzáférés korlátozva', en: 'Access Restricted' },
+  'operator.staff.noPermission': { hu: 'Nincs jogosultsága a személyzet kezeléséhez. Forduljon az adminisztrátorhoz.', en: "You don't have permission to manage staff members. Contact your administrator." },
 };
 
 interface LanguageContextType {
