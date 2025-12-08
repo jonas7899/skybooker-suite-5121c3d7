@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {
   Plane,
   LayoutDashboard,
@@ -29,6 +31,7 @@ interface NavItem {
 
 const DashboardLayout: React.FC = () => {
   const { user, profile, userRole, signOut } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -202,9 +205,10 @@ const DashboardLayout: React.FC = () => {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
+          <LanguageSwitcher />
           <NotificationBell />
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/">View Site</Link>
+            <Link to="/">{t('nav.home')}</Link>
           </Button>
         </header>
 
