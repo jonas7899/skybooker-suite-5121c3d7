@@ -19,7 +19,7 @@ const Index: React.FC = () => {
         {/* First Image - Cockpit */}
         <div className="text-center">
           <a 
-            href="http://vimeo.com/10713979" 
+            href="https://www.youtube.com/watch?v=c2PmFwrRROI" 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-block group"
