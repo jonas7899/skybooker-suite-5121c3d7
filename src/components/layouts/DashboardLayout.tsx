@@ -49,8 +49,9 @@ const DashboardLayout: React.FC = () => {
       case 'operator_admin':
         return [
           { href: '/operator', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+          { href: '/operator/calendar', label: 'Schedule', icon: <Calendar className="w-5 h-5" /> },
           { href: '/operator/flights', label: 'Flights', icon: <Plane className="w-5 h-5" /> },
-          { href: '/operator/bookings', label: 'Bookings', icon: <Calendar className="w-5 h-5" /> },
+          { href: '/operator/bookings', label: 'Bookings', icon: <Ticket className="w-5 h-5" /> },
           { href: '/operator/staff', label: 'Staff', icon: <UserCog className="w-5 h-5" /> },
           { href: '/operator/analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
           { href: '/operator/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },

@@ -37,6 +37,7 @@ const PublicLayout: React.FC = () => {
     { href: '/', label: t('nav.home') },
     { href: '/hirek', label: t('nav.news') },
     { href: '/rolam', label: t('nav.about') },
+    { href: '/idopontok', label: t('nav.schedule') },
   ];
 
   // Protected links (auth required)

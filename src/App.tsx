@@ -24,6 +24,9 @@ import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 
+import OperatorCalendar from "./pages/operator/OperatorCalendar";
+import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
+
 import RoleSwitcher from "./components/RoleSwitcher";
 
 const queryClient = new QueryClient();
@@ -45,6 +48,7 @@ const App = () => (
                 <Route path="/kapcsolat" element={<Kapcsolat />} />
                 <Route path="/arckepcsarnok" element={<Arckepcsarnok />} />
                 <Route path="/forum" element={<Forum />} />
+                <Route path="/idopontok" element={<AvailabilityCalendar />} />
               </Route>
 
               {/* Auth Routes */}
@@ -59,6 +63,11 @@ const App = () => (
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="settings" element={<AdminSettings />} />
+              </Route>
+
+              {/* Operator Routes */}
+              <Route path="/operator" element={<DashboardLayout />}>
+                <Route path="calendar" element={<OperatorCalendar />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

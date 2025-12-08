@@ -14,16 +14,190 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      flight_packages: {
+        Row: {
+          base_price_huf: number
+          created_at: string
+          detailed_description: string | null
+          difficulty_level: string
+          duration_minutes: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          max_passengers: number
+          name: string
+          operator_id: string
+          recommended_audience: string | null
+          route_description: string | null
+          short_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_price_huf: number
+          created_at?: string
+          detailed_description?: string | null
+          difficulty_level?: string
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          max_passengers?: number
+          name: string
+          operator_id: string
+          recommended_audience?: string | null
+          route_description?: string | null
+          short_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_price_huf?: number
+          created_at?: string
+          detailed_description?: string | null
+          difficulty_level?: string
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          max_passengers?: number
+          name?: string
+          operator_id?: string
+          recommended_audience?: string | null
+          route_description?: string | null
+          short_description?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_packages_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flight_time_slots: {
+        Row: {
+          created_at: string
+          current_passengers: number
+          duration_minutes: number
+          flight_package_id: string | null
+          id: string
+          max_passengers: number
+          operator_id: string
+          slot_date: string
+          start_time: string
+          status: Database["public"]["Enums"]["time_slot_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_passengers?: number
+          duration_minutes?: number
+          flight_package_id?: string | null
+          id?: string
+          max_passengers?: number
+          operator_id: string
+          slot_date: string
+          start_time: string
+          status?: Database["public"]["Enums"]["time_slot_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_passengers?: number
+          duration_minutes?: number
+          flight_package_id?: string | null
+          id?: string
+          max_passengers?: number
+          operator_id?: string
+          slot_date?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["time_slot_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_time_slots_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_time_slots_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operators: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          subscription_status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          subscription_status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          subscription_status?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          operator_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          operator_id?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          operator_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_operator_id: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "operator_admin" | "operator_staff" | "user"
+      time_slot_status: "available" | "booked" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +324,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "operator_admin", "operator_staff", "user"],
+      time_slot_status: ["available", "booked", "closed"],
+    },
   },
 } as const

@@ -17,6 +17,7 @@ export const translations: Translations = {
   'nav.contact': { hu: 'Kapcsolatfelvétel', en: 'Contact' },
   'nav.gallery': { hu: 'Arcképcsarnok', en: 'Gallery' },
   'nav.forum': { hu: 'Fórum', en: 'Forum' },
+  'nav.schedule': { hu: 'Időpontok', en: 'Schedule' },
   
   // Auth
   'auth.login': { hu: 'Belépés', en: 'Login' },
