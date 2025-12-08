@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          created_at: string
+          flight_package_id: string
+          id: string
+          notes: string | null
+          passenger_count: number
+          passenger_details: Json | null
+          status: Database["public"]["Enums"]["booking_status"]
+          time_slot_id: string
+          total_price_huf: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flight_package_id: string
+          id?: string
+          notes?: string | null
+          passenger_count?: number
+          passenger_details?: Json | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          time_slot_id: string
+          total_price_huf: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flight_package_id?: string
+          id?: string
+          notes?: string | null
+          passenger_count?: number
+          passenger_details?: Json | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          time_slot_id?: string
+          total_price_huf?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "flight_time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_packages: {
         Row: {
           base_price_huf: number
@@ -197,6 +254,7 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "operator_admin" | "operator_staff" | "user"
+      booking_status: "pending" | "confirmed" | "cancelled"
       time_slot_status: "available" | "booked" | "closed"
     }
     CompositeTypes: {
@@ -326,6 +384,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "operator_admin", "operator_staff", "user"],
+      booking_status: ["pending", "confirmed", "cancelled"],
       time_slot_status: ["available", "booked", "closed"],
     },
   },
