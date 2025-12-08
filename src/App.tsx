@@ -36,7 +36,7 @@ import UserVouchers from "./pages/dashboard/UserVouchers";
 import PurchaseVoucher from "./pages/vouchers/PurchaseVoucher";
 import OperatorAnalytics from "./pages/operator/OperatorAnalytics";
 
-import RoleSwitcher from "./components/RoleSwitcher";
+
 
 const queryClient = new QueryClient();
 
@@ -92,7 +92,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <RoleSwitcher />
+            
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
