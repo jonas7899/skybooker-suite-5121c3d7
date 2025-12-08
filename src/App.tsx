@@ -99,6 +99,7 @@ const App = () => (
                   <Route path="bookings" element={<OperatorBookings />} />
                   <Route path="pricing" element={<OperatorPricing />} />
                   <Route path="billing" element={<OperatorBilling />} />
+                  <Route path="analytics" element={<OperatorAnalytics />} />
                 </Route>
               </Route>
 
