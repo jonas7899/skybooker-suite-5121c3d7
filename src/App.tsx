@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import PublicLayout from "@/components/layouts/PublicLayout";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
+import OperatorProtectedRoute from "@/components/auth/OperatorProtectedRoute";
 import Index from "./pages/Index";
 import Rolam from "./pages/Rolam";
 import Hirek from "./pages/Hirek";
@@ -88,12 +89,14 @@ const App = () => (
                 </Route>
               </Route>
 
-              {/* Operator Routes */}
-              <Route path="/operator" element={<DashboardLayout />}>
-                <Route path="calendar" element={<OperatorCalendar />} />
-                <Route path="bookings" element={<OperatorBookings />} />
-                <Route path="pricing" element={<OperatorPricing />} />
-                <Route path="billing" element={<OperatorBilling />} />
+              {/* Operator Routes (protected, operator_admin and operator_staff only) */}
+              <Route path="/operator" element={<OperatorProtectedRoute />}>
+                <Route element={<DashboardLayout />}>
+                  <Route path="calendar" element={<OperatorCalendar />} />
+                  <Route path="bookings" element={<OperatorBookings />} />
+                  <Route path="pricing" element={<OperatorPricing />} />
+                  <Route path="billing" element={<OperatorBilling />} />
+                </Route>
               </Route>
 
               <Route path="*" element={<NotFound />} />
