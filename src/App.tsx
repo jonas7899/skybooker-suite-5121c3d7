@@ -17,6 +17,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import NotFound from "./pages/NotFound";
 
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOperators from "./pages/admin/AdminOperators";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -71,6 +72,9 @@ const App = () => (
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route path="bookings" element={<UserBookingsPage />} />
               </Route>
+
+              {/* Admin Login */}
+              <Route path="/admin/login" element={<AdminLogin />} />
 
               {/* Admin Routes (no menu link, only URL access) */}
               <Route path="/admin" element={<DashboardLayout />}>
