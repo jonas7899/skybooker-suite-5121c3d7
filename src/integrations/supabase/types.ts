@@ -71,6 +71,113 @@ export type Database = {
           },
         ]
       }
+      campaigns: {
+        Row: {
+          created_at: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          ends_at: string
+          flight_package_id: string
+          id: string
+          is_active: boolean
+          name: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          ends_at: string
+          flight_package_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          ends_at?: string
+          flight_package_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at: string | null
+          flight_package_id: string | null
+          id: string
+          is_active: boolean
+          operator_id: string
+          times_used: number
+          updated_at: string
+          usage_limit: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at?: string | null
+          flight_package_id?: string | null
+          id?: string
+          is_active?: boolean
+          operator_id: string
+          times_used?: number
+          updated_at?: string
+          usage_limit?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          flight_package_id?: string | null
+          id?: string
+          is_active?: boolean
+          operator_id?: string
+          times_used?: number
+          updated_at?: string
+          usage_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_packages: {
         Row: {
           base_price_huf: number
@@ -255,6 +362,50 @@ export type Database = {
         }
         Relationships: []
       }
+      package_discounts: {
+        Row: {
+          condition_days: number[] | null
+          condition_type: Database["public"]["Enums"]["discount_condition"]
+          created_at: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          flight_package_id: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          condition_days?: number[] | null
+          condition_type?: Database["public"]["Enums"]["discount_condition"]
+          created_at?: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          flight_package_id: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          condition_days?: number[] | null
+          condition_type?: Database["public"]["Enums"]["discount_condition"]
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          flight_package_id?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_discounts_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -296,6 +447,8 @@ export type Database = {
     Enums: {
       app_role: "super_admin" | "operator_admin" | "operator_staff" | "user"
       booking_status: "pending" | "confirmed" | "cancelled"
+      discount_condition: "always" | "weekday" | "weekend" | "specific_days"
+      discount_type: "percentage" | "fixed_amount"
       time_slot_status: "available" | "booked" | "closed"
     }
     CompositeTypes: {
@@ -426,6 +579,8 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "operator_admin", "operator_staff", "user"],
       booking_status: ["pending", "confirmed", "cancelled"],
+      discount_condition: ["always", "weekday", "weekend", "specific_days"],
+      discount_type: ["percentage", "fixed_amount"],
       time_slot_status: ["available", "booked", "closed"],
     },
   },
