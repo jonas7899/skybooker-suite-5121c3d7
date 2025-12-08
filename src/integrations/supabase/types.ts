@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_reminders: {
+        Row: {
+          booking_id: string
+          created_at: string
+          id: string
+          reminder_type: string
+          scheduled_for: string
+          sent: boolean
+          sent_at: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          id?: string
+          reminder_type: string
+          scheduled_for: string
+          sent?: boolean
+          sent_at?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          id?: string
+          reminder_type?: string
+          scheduled_for?: string
+          sent?: boolean
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_reminders_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           created_at: string
@@ -297,6 +335,82 @@ export type Database = {
           },
         ]
       }
+      gift_vouchers: {
+        Row: {
+          created_at: string
+          expires_at: string
+          flight_package_id: string
+          id: string
+          operator_id: string
+          personal_message: string | null
+          purchase_price_huf: number
+          purchaser_user_id: string
+          recipient_email: string | null
+          recipient_name: string
+          redeemed_at: string | null
+          redeemed_booking_id: string | null
+          status: string
+          updated_at: string
+          voucher_code: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          flight_package_id: string
+          id?: string
+          operator_id: string
+          personal_message?: string | null
+          purchase_price_huf: number
+          purchaser_user_id: string
+          recipient_email?: string | null
+          recipient_name: string
+          redeemed_at?: string | null
+          redeemed_booking_id?: string | null
+          status?: string
+          updated_at?: string
+          voucher_code: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          flight_package_id?: string
+          id?: string
+          operator_id?: string
+          personal_message?: string | null
+          purchase_price_huf?: number
+          purchaser_user_id?: string
+          recipient_email?: string | null
+          recipient_name?: string
+          redeemed_at?: string | null
+          redeemed_booking_id?: string | null
+          status?: string
+          updated_at?: string
+          voucher_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_vouchers_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_vouchers_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_vouchers_redeemed_booking_id_fkey"
+            columns: ["redeemed_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -448,11 +562,57 @@ export type Database = {
         }
         Relationships: []
       }
+      waiting_list: {
+        Row: {
+          created_at: string
+          flight_package_id: string
+          id: string
+          notified: boolean
+          passenger_count: number
+          time_slot_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flight_package_id: string
+          id?: string
+          notified?: boolean
+          passenger_count?: number
+          time_slot_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flight_package_id?: string
+          id?: string
+          notified?: boolean
+          passenger_count?: number
+          time_slot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waiting_list_flight_package_id_fkey"
+            columns: ["flight_package_id"]
+            isOneToOne: false
+            referencedRelation: "flight_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waiting_list_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "flight_time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_voucher_code: { Args: never; Returns: string }
       get_user_operator_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
