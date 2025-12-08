@@ -19,6 +19,27 @@ export const translations: Translations = {
   'nav.forum': { hu: 'Fórum', en: 'Forum' },
   'nav.schedule': { hu: 'Időpontok', en: 'Schedule' },
   
+  // Dashboard Navigation
+  'dashboard.nav.dashboard': { hu: 'Irányítópult', en: 'Dashboard' },
+  'dashboard.nav.operators': { hu: 'Operátorok', en: 'Operators' },
+  'dashboard.nav.users': { hu: 'Felhasználók', en: 'Users' },
+  'dashboard.nav.subscriptions': { hu: 'Előfizetések', en: 'Subscriptions' },
+  'dashboard.nav.analytics': { hu: 'Analitika', en: 'Analytics' },
+  'dashboard.nav.settings': { hu: 'Beállítások', en: 'Settings' },
+  'dashboard.nav.calendar': { hu: 'Naptár', en: 'Calendar' },
+  'dashboard.nav.flights': { hu: 'Repülések', en: 'Flights' },
+  'dashboard.nav.bookings': { hu: 'Foglalások', en: 'Bookings' },
+  'dashboard.nav.staff': { hu: 'Személyzet', en: 'Staff' },
+  'dashboard.nav.myFlights': { hu: 'Repüléseim', en: 'My Flights' },
+  'dashboard.nav.favorites': { hu: 'Kedvencek', en: 'Favorites' },
+  'dashboard.nav.signOut': { hu: 'Kijelentkezés', en: 'Sign Out' },
+  
+  // Role badges
+  'role.superAdmin': { hu: 'Szuper Admin', en: 'Super Admin' },
+  'role.operatorAdmin': { hu: 'Operátor Admin', en: 'Operator Admin' },
+  'role.staff': { hu: 'Személyzet', en: 'Staff' },
+  'role.member': { hu: 'Tag', en: 'Member' },
+  
   // Auth
   'auth.login': { hu: 'Belépés', en: 'Login' },
   'auth.logout': { hu: 'Kilépés', en: 'Logout' },
