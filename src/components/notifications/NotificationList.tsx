@@ -1,7 +1,7 @@
 import React from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format, parse } from 'date-fns';
 import { hu } from 'date-fns/locale';
-import { Check, Plane, X, Info } from 'lucide-react';
+import { Check, Plane, X, Info, Calendar, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Notification } from '@/types/notification';
 
@@ -20,6 +20,15 @@ const getNotificationIcon = (type: string) => {
       return <X className="h-4 w-4 text-destructive" />;
     default:
       return <Info className="h-4 w-4 text-muted-foreground" />;
+  }
+};
+
+const formatTime = (timeString: string) => {
+  try {
+    const parsed = parse(timeString, 'HH:mm:ss', new Date());
+    return format(parsed, 'HH:mm');
+  } catch {
+    return timeString;
   }
 };
 
@@ -60,6 +69,27 @@ export const NotificationList: React.FC<NotificationListProps> = ({
               <p className="text-sm text-muted-foreground mt-0.5">
                 {notification.message}
               </p>
+              {notification.booking && (
+                <div className="mt-2 p-2 bg-muted/50 rounded-md space-y-1">
+                  {notification.booking.flight_package?.name && (
+                    <p className="text-xs font-medium text-foreground">
+                      {notification.booking.flight_package.name}
+                    </p>
+                  )}
+                  {notification.booking.time_slot && (
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(notification.booking.time_slot.slot_date), 'yyyy. MMM d.', { locale: hu })}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTime(notification.booking.time_slot.start_time)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground mt-1">
                 {formatDistanceToNow(new Date(notification.created_at), {
                   addSuffix: true,
