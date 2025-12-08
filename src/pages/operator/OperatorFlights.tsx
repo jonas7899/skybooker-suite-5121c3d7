@@ -1,22 +1,25 @@
 import React from 'react';
 import { Plane, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const OperatorFlights: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">
-            Flights
+            {t('operator.flights.title')}
           </h1>
           <p className="text-muted-foreground">
-            Manage your flight experiences
+            {t('operator.flights.subtitle')}
           </p>
         </div>
         <Button variant="gradient">
           <Plus className="w-4 h-4" />
-          Add Flight
+          {t('operator.flights.addFlight')}
         </Button>
       </div>
 
@@ -25,10 +28,10 @@ const OperatorFlights: React.FC = () => {
           <Plane className="w-8 h-8 text-muted-foreground" />
         </div>
         <h2 className="text-xl font-display font-semibold mb-2">
-          No flights created yet
+          {t('operator.flights.noFlights')}
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Create your first flight experience and start accepting bookings.
+          {t('operator.flights.noFlightsDesc')}
         </p>
       </div>
     </div>
