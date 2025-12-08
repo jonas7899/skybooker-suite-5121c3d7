@@ -32,6 +32,9 @@ import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
 import BookingCheckout from "./pages/booking/BookingCheckout";
 
 import UserBookingsPage from "./pages/dashboard/UserBookingsPage";
+import UserVouchers from "./pages/dashboard/UserVouchers";
+import PurchaseVoucher from "./pages/vouchers/PurchaseVoucher";
+import OperatorAnalytics from "./pages/operator/OperatorAnalytics";
 
 import RoleSwitcher from "./components/RoleSwitcher";
 
