@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import {
   Plane,
   LayoutDashboard,
@@ -201,6 +202,7 @@ const DashboardLayout: React.FC = () => {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
+          <NotificationBell />
           <Button variant="ghost" size="sm" asChild>
             <Link to="/">View Site</Link>
           </Button>
