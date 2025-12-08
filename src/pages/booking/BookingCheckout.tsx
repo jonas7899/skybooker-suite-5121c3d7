@@ -74,6 +74,8 @@ const BookingCheckout = () => {
     };
     updatePrice();
   }, [selectedPackage, selectedSlot, passengerCount, appliedCoupon, calculatePrice]);
+
+  const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setIsAuthenticated(!!user);
   };
