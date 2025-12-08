@@ -3,15 +3,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTimeSlots } from '@/hooks/useTimeSlots';
 import { useBookings } from '@/hooks/useBookings';
+import { usePricing } from '@/hooks/usePricing';
 import { supabase } from '@/integrations/supabase/client';
 import { TimeSlot, FlightPackage } from '@/types/scheduling';
 import { PassengerDetails } from '@/types/booking';
+import { Coupon, PriceBreakdown } from '@/types/pricing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import CouponInput from '@/components/booking/CouponInput';
+import PriceBreakdownComponent from '@/components/booking/PriceBreakdown';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { hu, enUS } from 'date-fns/locale';
@@ -34,9 +38,12 @@ const BookingCheckout = () => {
   const [notes, setNotes] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdown | null>(null);
 
   const { timeSlots, loading: slotsLoading, fetchWeekSlots, canBook } = useTimeSlots();
   const { createBooking } = useBookings();
+  const { calculatePrice, incrementCouponUsage } = usePricing();
 
   useEffect(() => {
     checkAuth();
@@ -50,7 +57,23 @@ const BookingCheckout = () => {
     }
   }, []);
 
-  const checkAuth = async () => {
+  // Calculate price when relevant values change
+  useEffect(() => {
+    const updatePrice = async () => {
+      if (selectedPackage && selectedSlot) {
+        const slotDate = new Date(selectedSlot.slot_date);
+        const breakdown = await calculatePrice(
+          selectedPackage.base_price_huf,
+          passengerCount,
+          selectedPackage.id,
+          slotDate,
+          appliedCoupon
+        );
+        setPriceBreakdown(breakdown);
+      }
+    };
+    updatePrice();
+  }, [selectedPackage, selectedSlot, passengerCount, appliedCoupon, calculatePrice]);
     const { data: { user } } = await supabase.auth.getUser();
     setIsAuthenticated(!!user);
   };
@@ -133,7 +156,7 @@ const BookingCheckout = () => {
     setPassengerDetails(newDetails);
   };
 
-  const totalPrice = selectedPackage ? selectedPackage.base_price_huf * passengerCount : 0;
+  const totalPrice = priceBreakdown?.finalPrice ?? (selectedPackage ? selectedPackage.base_price_huf * passengerCount : 0);
 
   const handleSubmit = async () => {
     if (!isAuthenticated) {
@@ -160,6 +183,11 @@ const BookingCheckout = () => {
         total_price_huf: totalPrice,
         notes,
       });
+
+      // Increment coupon usage if one was applied
+      if (appliedCoupon) {
+        await incrementCouponUsage(appliedCoupon.id);
+      }
 
       toast.success(
         language === 'hu' 
@@ -490,12 +518,26 @@ const BookingCheckout = () => {
                     ))}
                   </div>
 
+                  {/* Coupon Input */}
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium mb-3">{language === 'hu' ? 'Kuponkód' : 'Coupon Code'}</h4>
+                    <CouponInput
+                      packageId={selectedPackage?.id}
+                      appliedCoupon={appliedCoupon}
+                      onCouponApplied={setAppliedCoupon}
+                    />
+                  </div>
+
                   <Separator />
 
-                  <div className="flex justify-between items-center text-xl font-bold">
-                    <span>{language === 'hu' ? 'Összesen:' : 'Total:'}</span>
-                    <span>{totalPrice.toLocaleString()} Ft</span>
-                  </div>
+                  {/* Price Breakdown */}
+                  {priceBreakdown && selectedPackage && (
+                    <PriceBreakdownComponent
+                      breakdown={priceBreakdown}
+                      passengerCount={passengerCount}
+                      pricePerPerson={selectedPackage.base_price_huf}
+                    />
+                  )}
                 </div>
 
                 {!isAuthenticated && (
