@@ -8,9 +8,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader2, Shield, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { validatePasswordStrength } from '@/lib/passwordValidation';
+import { normalizeIdentifier } from '@/lib/identifierUtils';
 
 const AdminLogin: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isBootstrapMode, setIsBootstrapMode] = useState(false);
@@ -18,7 +21,7 @@ const AdminLogin: React.FC = () => {
   
   // Bootstrap form
   const [newAdminName, setNewAdminName] = useState('');
-  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminIdentifier, setNewAdminIdentifier] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [newAdminPhone, setNewAdminPhone] = useState('');
   
@@ -81,7 +84,10 @@ const AdminLogin: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { error, status } = await signIn(email, password);
+      // Normalize identifier (add @admin.internal if not an email)
+      const normalizedEmail = normalizeIdentifier(identifier);
+      
+      const { error, status } = await signIn(normalizedEmail, password);
 
       if (error) {
         if (error.message === 'account_pending') {
@@ -103,7 +109,9 @@ const AdminLogin: React.FC = () => {
         } else {
           toast({
             title: language === 'hu' ? 'Bejelentkezési hiba' : 'Login error',
-            description: error.message,
+            description: language === 'hu' 
+              ? 'Hibás azonosító vagy jelszó'
+              : 'Invalid identifier or password',
             variant: 'destructive',
           });
         }
@@ -128,24 +136,43 @@ const AdminLogin: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Validate phone format
-      const phoneRegex = /^\+[1-9][\d\s]{7,17}$/;
-      const cleanPhone = newAdminPhone.replace(/\s/g, '');
-      if (newAdminPhone.length > 0 && !phoneRegex.test(cleanPhone)) {
+      // Validate password strength
+      const passwordStrength = validatePasswordStrength(newAdminPassword);
+      if (!passwordStrength.isStrong) {
         toast({
-          title: language === 'hu' ? 'Érvénytelen telefonszám' : 'Invalid phone number',
+          title: language === 'hu' ? 'Gyenge jelszó' : 'Weak password',
           description: language === 'hu' 
-            ? 'Kérlek add meg az országkódot (pl. +36...)'
-            : 'Please include the country code (e.g., +36...)',
+            ? 'A jelszónak meg kell felelnie minden követelménynek.'
+            : 'Password must meet all requirements.',
           variant: 'destructive',
         });
         setIsLoading(false);
         return;
       }
 
+      // Validate phone format (if provided)
+      if (newAdminPhone.length > 0) {
+        const phoneRegex = /^\+[1-9][\d\s]{7,17}$/;
+        const cleanPhone = newAdminPhone.replace(/\s/g, '');
+        if (!phoneRegex.test(cleanPhone)) {
+          toast({
+            title: language === 'hu' ? 'Érvénytelen telefonszám' : 'Invalid phone number',
+            description: language === 'hu' 
+              ? 'Kérlek add meg az országkódot (pl. +36...)'
+              : 'Please include the country code (e.g., +36...)',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Normalize identifier (convert username to internal email if needed)
+      const normalizedEmail = normalizeIdentifier(newAdminIdentifier);
+
       // Create new super admin auth user
       const { data, error } = await supabase.auth.signUp({
-        email: newAdminEmail,
+        email: normalizedEmail,
         password: newAdminPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/admin`,
@@ -193,7 +220,7 @@ const AdminLogin: React.FC = () => {
         });
 
         setIsBootstrapMode(false);
-        setNewAdminEmail('');
+        setNewAdminIdentifier('');
         setNewAdminPassword('');
         setNewAdminName('');
         setNewAdminPhone('');
@@ -258,18 +285,26 @@ const AdminLogin: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('auth.email')}</Label>
+                  <Label htmlFor="identifier">
+                    {language === 'hu' ? 'Azonosító (felhasználónév vagy e-mail)' : 'Identifier (username or email)'}
+                  </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={newAdminEmail}
-                    onChange={(e) => setNewAdminEmail(e.target.value)}
+                    id="identifier"
+                    type="text"
+                    placeholder={language === 'hu' ? 'admin vagy admin@pelda.hu' : 'admin or admin@example.com'}
+                    value={newAdminIdentifier}
+                    onChange={(e) => setNewAdminIdentifier(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'hu' 
+                      ? 'Megadhatsz egyszerű felhasználónevet vagy e-mail címet'
+                      : 'You can use a simple username or email address'}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">
-                    {language === 'hu' ? 'Telefonszám' : 'Phone Number'}
+                    {language === 'hu' ? 'Telefonszám (opcionális)' : 'Phone Number (optional)'}
                   </Label>
                   <Input
                     id="phone"
@@ -278,11 +313,6 @@ const AdminLogin: React.FC = () => {
                     value={newAdminPhone}
                     onChange={(e) => setNewAdminPhone(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {language === 'hu' 
-                      ? 'Nemzetközi formátum országkóddal (opcionális)'
-                      : 'International format with country code (optional)'}
-                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">{t('auth.password')}</Label>
@@ -292,10 +322,14 @@ const AdminLogin: React.FC = () => {
                     value={newAdminPassword}
                     onChange={(e) => setNewAdminPassword(e.target.value)}
                     required
-                    minLength={6}
                   />
+                  <PasswordStrengthIndicator password={newAdminPassword} />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading || !validatePasswordStrength(newAdminPassword).isStrong}
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -317,12 +351,15 @@ const AdminLogin: React.FC = () => {
               </h2>
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('auth.email')}</Label>
+                  <Label htmlFor="identifier">
+                    {language === 'hu' ? 'Azonosító (felhasználónév vagy e-mail)' : 'Identifier (username or email)'}
+                  </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="identifier"
+                    type="text"
+                    placeholder={language === 'hu' ? 'admin vagy admin@pelda.hu' : 'admin or admin@example.com'}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     required
                   />
                 </div>
