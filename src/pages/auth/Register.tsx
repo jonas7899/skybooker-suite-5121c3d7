@@ -7,6 +7,8 @@ import { Plane, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { validatePasswordStrength } from '@/lib/passwordValidation';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -47,13 +49,14 @@ const Register: React.FC = () => {
       return;
     }
 
-    // Validate password
-    if (formData.password.length < 6) {
+    // Validate password strength
+    const passwordStrength = validatePasswordStrength(formData.password);
+    if (!passwordStrength.isStrong) {
       toast({
-        title: language === 'hu' ? 'Túl rövid jelszó' : 'Password too short',
+        title: language === 'hu' ? 'Gyenge jelszó' : 'Weak password',
         description: language === 'hu'
-          ? 'A jelszónak legalább 6 karakter hosszúnak kell lennie.'
-          : 'Password must be at least 6 characters long.',
+          ? 'A jelszónak meg kell felelnie minden követelménynek.'
+          : 'Password must meet all requirements.',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -106,6 +109,8 @@ const Register: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const passwordStrength = validatePasswordStrength(formData.password);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -184,13 +189,8 @@ const Register: React.FC = () => {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                minLength={6}
               />
-              <p className="text-xs text-muted-foreground">
-                {language === 'hu' 
-                  ? 'Minimum 6 karakter'
-                  : 'Minimum 6 characters'}
-              </p>
+              <PasswordStrengthIndicator password={formData.password} />
             </div>
 
             <Button
@@ -198,7 +198,7 @@ const Register: React.FC = () => {
               variant="gradient"
               className="w-full"
               size="lg"
-              disabled={isLoading}
+              disabled={isLoading || !passwordStrength.isStrong}
             >
               {isLoading ? (
                 <>
