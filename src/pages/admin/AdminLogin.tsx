@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Loader2, Shield, UserPlus } from 'lucide-react';
+import { Loader2, Shield, UserPlus, Home } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { PasswordGenerator } from '@/components/auth/PasswordGenerator';
 import { validatePasswordStrength } from '@/lib/passwordValidation';
 import { normalizeIdentifier } from '@/lib/identifierUtils';
 
@@ -23,6 +24,7 @@ const AdminLogin: React.FC = () => {
   const [newAdminName, setNewAdminName] = useState('');
   const [newAdminIdentifier, setNewAdminIdentifier] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [newAdminConfirmPassword, setNewAdminConfirmPassword] = useState('');
   const [newAdminPhone, setNewAdminPhone] = useState('');
   
   const { signIn, user, userRole, profile } = useAuth();
@@ -121,6 +123,19 @@ const AdminLogin: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Validate password confirmation
+      if (newAdminPassword !== newAdminConfirmPassword) {
+        toast({
+          title: language === 'hu' ? 'Jelszavak nem egyeznek' : 'Passwords do not match',
+          description: language === 'hu'
+            ? 'A két jelszó mező tartalma nem egyezik.'
+            : 'The password confirmation does not match.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Validate password strength (check against name and identifier)
       const passwordStrength = validatePasswordStrength(newAdminPassword, newAdminIdentifier, newAdminName);
       if (!passwordStrength.isStrong) {
@@ -207,6 +222,7 @@ const AdminLogin: React.FC = () => {
         setIsBootstrapMode(false);
         setNewAdminIdentifier('');
         setNewAdminPassword('');
+        setNewAdminConfirmPassword('');
         setNewAdminName('');
         setNewAdminPhone('');
       }
@@ -305,15 +321,35 @@ const AdminLogin: React.FC = () => {
                     id="password"
                     type="password"
                     value={newAdminPassword}
-                    onChange={(e) => setNewAdminPassword(e.target.value)}
+                    onChange={(e) => { setNewAdminPassword(e.target.value); setNewAdminConfirmPassword(''); }}
                     required
                   />
+                  <PasswordGenerator 
+                    onAccept={(password) => { setNewAdminPassword(password); setNewAdminConfirmPassword(password); }} 
+                  />
                   <PasswordStrengthIndicator password={newAdminPassword} userName={newAdminIdentifier} fullName={newAdminName} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">
+                    {language === 'hu' ? 'Jelszó megerősítése' : 'Confirm Password'}
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={newAdminConfirmPassword}
+                    onChange={(e) => setNewAdminConfirmPassword(e.target.value)}
+                    required
+                  />
+                  {newAdminConfirmPassword && newAdminPassword !== newAdminConfirmPassword && (
+                    <p className="text-xs text-destructive">
+                      {language === 'hu' ? 'A jelszavak nem egyeznek' : 'Passwords do not match'}
+                    </p>
+                  )}
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading || !validatePasswordStrength(newAdminPassword, newAdminIdentifier, newAdminName).isStrong}
+                  disabled={isLoading || !validatePasswordStrength(newAdminPassword, newAdminIdentifier, newAdminName).isStrong || newAdminPassword !== newAdminConfirmPassword}
                 >
                   {isLoading ? (
                     <>
