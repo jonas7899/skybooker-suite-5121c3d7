@@ -49,8 +49,8 @@ const Register: React.FC = () => {
       return;
     }
 
-    // Validate password strength
-    const passwordStrength = validatePasswordStrength(formData.password);
+    // Validate password strength (check against name and email)
+    const passwordStrength = validatePasswordStrength(formData.password, formData.email, formData.name);
     if (!passwordStrength.isStrong) {
       toast({
         title: language === 'hu' ? 'Gyenge jelszó' : 'Weak password',
@@ -110,7 +110,7 @@ const Register: React.FC = () => {
     }
   };
 
-  const passwordStrength = validatePasswordStrength(formData.password);
+  const passwordStrength = validatePasswordStrength(formData.password, formData.email, formData.name);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -190,7 +190,7 @@ const Register: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
-              <PasswordStrengthIndicator password={formData.password} />
+              <PasswordStrengthIndicator password={formData.password} userName={formData.email} fullName={formData.name} />
             </div>
 
             <Button

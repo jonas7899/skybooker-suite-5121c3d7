@@ -121,8 +121,8 @@ const AdminLogin: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Validate password strength
-      const passwordStrength = validatePasswordStrength(newAdminPassword);
+      // Validate password strength (check against name and identifier)
+      const passwordStrength = validatePasswordStrength(newAdminPassword, newAdminIdentifier, newAdminName);
       if (!passwordStrength.isStrong) {
         toast({
           title: language === 'hu' ? 'Gyenge jelszó' : 'Weak password',
@@ -308,12 +308,12 @@ const AdminLogin: React.FC = () => {
                     onChange={(e) => setNewAdminPassword(e.target.value)}
                     required
                   />
-                  <PasswordStrengthIndicator password={newAdminPassword} />
+                  <PasswordStrengthIndicator password={newAdminPassword} userName={newAdminIdentifier} fullName={newAdminName} />
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading || !validatePasswordStrength(newAdminPassword).isStrong}
+                  disabled={isLoading || !validatePasswordStrength(newAdminPassword, newAdminIdentifier, newAdminName).isStrong}
                 >
                   {isLoading ? (
                     <>
