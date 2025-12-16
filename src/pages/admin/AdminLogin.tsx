@@ -45,35 +45,20 @@ const AdminLogin: React.FC = () => {
 
   const checkBootstrapStatus = async () => {
     try {
-      // Check if there are any active super admins
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, status, is_bootstrap')
-        .eq('is_bootstrap', true)
-        .eq('status', 'bootstrap')
-        .maybeSingle();
+      // Use SECURITY DEFINER function to bypass RLS
+      const { data: exists, error } = await supabase.rpc('check_super_admin_exists');
 
       if (error) {
-        console.error('Error checking bootstrap:', error);
-      }
-
-      // If we have a bootstrap user in bootstrap status, show the create super admin form
-      if (data) {
+        console.error('Error checking super admin:', error);
+        // On error, show bootstrap mode as safe fallback
         setIsBootstrapMode(true);
       } else {
-        // Check if there are any active super admins
-        const { data: admins, error: adminsError } = await supabase
-          .from('user_roles')
-          .select('user_id, profiles!inner(status)')
-          .eq('role', 'super_admin');
-
-        if (!adminsError && (!admins || admins.length === 0)) {
-          // No super admins exist, need to create one
-          setIsBootstrapMode(true);
-        }
+        // If no super_admin exists, enter bootstrap mode
+        setIsBootstrapMode(!exists);
       }
     } catch (error) {
       console.error('Error in checkBootstrapStatus:', error);
+      setIsBootstrapMode(true); // Safe fallback
     } finally {
       setCheckingBootstrap(false);
     }
