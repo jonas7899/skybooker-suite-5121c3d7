@@ -657,6 +657,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_super_admin_exists: { Args: never; Returns: boolean }
       create_first_super_admin: {
         Args: { _full_name: string; _phone?: string; _user_id: string }
         Returns: boolean
