@@ -11,14 +11,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface PasswordStrengthIndicatorProps {
   password: string;
   showRequirements?: boolean;
+  userName?: string;
+  fullName?: string;
 }
 
 export function PasswordStrengthIndicator({
   password,
   showRequirements = true,
+  userName,
+  fullName,
 }: PasswordStrengthIndicatorProps) {
   const { language } = useLanguage();
-  const strength = validatePasswordStrength(password);
+  const strength = validatePasswordStrength(password, userName, fullName);
 
   const requirements = [
     {
@@ -52,6 +56,14 @@ export function PasswordStrengthIndicator({
           : "Special character (!@#$%...)",
       met: strength.checks.hasSpecial,
     },
+    {
+      key: "noWeakPattern",
+      label:
+        language === "hu"
+          ? "Nem tartalmaz gyenge mintát (1234, qwert, név...)"
+          : "No weak patterns (1234, qwert, name...)",
+      met: strength.checks.noWeakPattern,
+    },
   ];
 
   if (!password) {
@@ -71,7 +83,7 @@ export function PasswordStrengthIndicator({
               "font-medium",
               strength.score <= 2
                 ? "text-destructive"
-                : strength.score <= 3
+                : strength.score <= 4
                 ? "text-yellow-600"
                 : "text-green-600"
             )}
@@ -85,10 +97,19 @@ export function PasswordStrengthIndicator({
               "h-full transition-all duration-300",
               getPasswordStrengthColor(strength.score)
             )}
-            style={{ width: `${(strength.score / 5) * 100}%` }}
+            style={{ width: `${(strength.score / 6) * 100}%` }}
           />
         </div>
       </div>
+
+      {/* Weak pattern warning */}
+      {strength.weakPatternFound && (
+        <p className="text-xs text-destructive">
+          {language === "hu"
+            ? `Talált gyenge minta: "${strength.weakPatternFound}"`
+            : `Weak pattern found: "${strength.weakPatternFound}"`}
+        </p>
+      )}
 
       {/* Requirements checklist */}
       {showRequirements && (
