@@ -23,7 +23,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOperators from "./pages/admin/AdminOperators";
 import AdminUsers from "./pages/admin/AdminUsers";
-import AdminSubscriptions from "./pages/admin/AdminSubscriptions";
+import AdminSubscribers from "./pages/admin/AdminSubscribers";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 
@@ -84,9 +84,9 @@ const App = () => (
               <Route path="/admin" element={<AdminProtectedRoute />}>
                 <Route element={<DashboardLayout />}>
                   <Route index element={<AdminDashboard />} />
+                  <Route path="subscribers" element={<AdminSubscribers />} />
                   <Route path="operators" element={<AdminOperators />} />
                   <Route path="users" element={<AdminUsers />} />
-                  <Route path="subscriptions" element={<AdminSubscriptions />} />
                   <Route path="analytics" element={<AdminAnalytics />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>

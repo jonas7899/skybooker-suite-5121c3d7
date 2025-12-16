@@ -16,7 +16,6 @@ import {
   Menu,
   X,
   BarChart3,
-  CreditCard,
   Building2,
   UserCog,
   Ticket,
@@ -44,9 +43,9 @@ const DashboardLayout: React.FC = () => {
       case 'super_admin':
         return [
           { href: '/admin', label: t('dashboard.nav.dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
-          { href: '/admin/operators', label: t('dashboard.nav.operators'), icon: <Building2 className="w-5 h-5" /> },
+          { href: '/admin/subscribers', label: t('dashboard.nav.subscribers'), icon: <Building2 className="w-5 h-5" /> },
+          { href: '/admin/operators', label: t('dashboard.nav.operators'), icon: <UserCog className="w-5 h-5" /> },
           { href: '/admin/users', label: t('dashboard.nav.users'), icon: <Users className="w-5 h-5" /> },
-          { href: '/admin/subscriptions', label: t('dashboard.nav.subscriptions'), icon: <CreditCard className="w-5 h-5" /> },
           { href: '/admin/analytics', label: t('dashboard.nav.analytics'), icon: <BarChart3 className="w-5 h-5" /> },
           { href: '/admin/settings', label: t('dashboard.nav.settings'), icon: <Settings className="w-5 h-5" /> },
         ];

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Building2, Search, Plus, MoreVertical, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { UserCog, Search, Plus, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,41 +26,142 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAdminOperators } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import SubscriptionStatusBadge from '@/components/subscription/SubscriptionStatusBadge';
-import { SubscriptionStatus } from '@/types/subscription';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { hu, enUS } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+
+interface OperatorStaff {
+  id: string;
+  user_id: string;
+  role: 'operator_admin' | 'operator_staff';
+  operator_id: string | null;
+  created_at: string;
+  profile: {
+    full_name: string;
+    phone: string | null;
+    status: string;
+  } | null;
+  operator: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+}
 
 const AdminOperators: React.FC = () => {
-  const { operators, isLoading, updateOperatorStatus, extendSubscription } = useAdminOperators();
   const { t, language } = useLanguage();
+  const [operators, setOperators] = useState<OperatorStaff[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
+  const fetchOperators = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch users with operator_admin or operator_staff roles
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select(`
+          id,
+          user_id,
+          role,
+          operator_id,
+          created_at
+        `)
+        .in('role', ['operator_admin', 'operator_staff']);
+
+      if (roleError) throw roleError;
+
+      // Fetch profiles and operators for these users
+      const userIds = roleData?.map(r => r.user_id) || [];
+      const operatorIds = roleData?.filter(r => r.operator_id).map(r => r.operator_id) || [];
+
+      const [profilesResult, operatorsResult] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, phone, status').in('id', userIds),
+        supabase.from('operators').select('id, name, slug').in('id', operatorIds)
+      ]);
+
+      if (profilesResult.error) throw profilesResult.error;
+      if (operatorsResult.error) throw operatorsResult.error;
+
+      const profilesMap = new Map(profilesResult.data?.map(p => [p.id, p]) || []);
+      const operatorsMap = new Map(operatorsResult.data?.map(o => [o.id, o]) || []);
+
+      const enrichedData: OperatorStaff[] = (roleData || []).map(role => ({
+        ...role,
+        role: role.role as 'operator_admin' | 'operator_staff',
+        profile: profilesMap.get(role.user_id) || null,
+        operator: role.operator_id ? operatorsMap.get(role.operator_id) || null : null,
+      }));
+
+      setOperators(enrichedData);
+    } catch (error) {
+      console.error('Error fetching operators:', error);
+      toast.error(t('error.generic'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOperators();
+  }, []);
+
+  const toggleOperatorStatus = async (userId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: newStatus })
+        .eq('id', userId);
+
+      if (error) throw error;
+      toast.success(newStatus === 'active' ? t('admin.operators.activated') : t('admin.operators.deactivated'));
+      fetchOperators();
+    } catch (error) {
+      console.error('Error updating operator status:', error);
+      toast.error(t('error.generic'));
+    }
+  };
+
   const filteredOperators = operators.filter(op => {
-    const matchesSearch = op.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      op.slug.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || op.subscription_status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSearch = 
+      op.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      op.operator?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || op.role === roleFilter;
+    const matchesStatus = statusFilter === 'all' || op.profile?.status === statusFilter;
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   const stats = {
     total: operators.length,
-    active: operators.filter(op => op.subscription_status === 'active').length,
-    trial: operators.filter(op => op.subscription_status === 'trial').length,
-    expired: operators.filter(op => op.subscription_status === 'expired').length,
+    admins: operators.filter(op => op.role === 'operator_admin').length,
+    staff: operators.filter(op => op.role === 'operator_staff').length,
+    active: operators.filter(op => op.profile?.status === 'active').length,
   };
 
-  const getDaysRemaining = (expiresAt?: string) => {
-    if (!expiresAt) return undefined;
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    const days = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 0;
+  const getRoleBadge = (role: string) => {
+    if (role === 'operator_admin') {
+      return <Badge variant="default">{t('admin.operators.roleAdmin')}</Badge>;
+    }
+    return <Badge variant="secondary">{t('admin.operators.roleStaff')}</Badge>;
+  };
+
+  const getStatusBadge = (status: string | undefined) => {
+    if (status === 'active') {
+      return <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">{t('admin.operators.statusActive')}</Badge>;
+    }
+    if (status === 'suspended') {
+      return <Badge variant="destructive">{t('admin.operators.statusSuspended')}</Badge>;
+    }
+    return <Badge variant="outline">{status || '-'}</Badge>;
   };
 
   if (isLoading) {
@@ -98,20 +199,20 @@ const AdminOperators: React.FC = () => {
         </Card>
         <Card>
           <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-primary">{stats.admins}</div>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.admins')}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-blue-500">{stats.staff}</div>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.staffCount')}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
             <div className="text-2xl font-bold text-green-500">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">{t('admin.operators.activeSubscription')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-500">{stats.trial}</div>
-            <p className="text-xs text-muted-foreground">{t('admin.operators.trial')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-destructive">{stats.expired}</div>
-            <p className="text-xs text-muted-foreground">{t('admin.operators.expired')}</p>
+            <p className="text-xs text-muted-foreground">{t('admin.operators.activeCount')}</p>
           </CardContent>
         </Card>
       </div>
@@ -120,7 +221,7 @@ const AdminOperators: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
+            <UserCog className="w-5 h-5" />
             {t('admin.operators.list')}
           </CardTitle>
         </CardHeader>
@@ -135,23 +236,31 @@ const AdminOperators: React.FC = () => {
                 className="pl-10"
               />
             </div>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder={t('admin.operators.roleFilter')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('admin.operators.allRoles')}</SelectItem>
+                <SelectItem value="operator_admin">{t('admin.operators.roleAdmin')}</SelectItem>
+                <SelectItem value="operator_staff">{t('admin.operators.roleStaff')}</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder={t('admin.operators.statusFilter')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('admin.operators.allStatus')}</SelectItem>
-                <SelectItem value="active">{t('admin.operators.active')}</SelectItem>
-                <SelectItem value="trial">{t('admin.operators.trial')}</SelectItem>
-                <SelectItem value="expired">{t('admin.operators.expired')}</SelectItem>
-                <SelectItem value="cancelled">{t('admin.operators.cancelled')}</SelectItem>
+                <SelectItem value="active">{t('admin.operators.statusActive')}</SelectItem>
+                <SelectItem value="suspended">{t('admin.operators.statusSuspended')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {filteredOperators.length === 0 ? (
             <div className="text-center py-12">
-              <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <UserCog className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <p className="text-muted-foreground">{t('admin.operators.noResults')}</p>
             </div>
           ) : (
@@ -159,10 +268,11 @@ const AdminOperators: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('admin.operators.operator')}</TableHead>
+                    <TableHead>{t('admin.operators.name')}</TableHead>
+                    <TableHead>{t('admin.operators.subscriber')}</TableHead>
+                    <TableHead>{t('admin.operators.role')}</TableHead>
                     <TableHead>{t('admin.operators.status')}</TableHead>
-                    <TableHead>{t('admin.operators.expiry')}</TableHead>
-                    <TableHead>{t('admin.operators.fee')}</TableHead>
+                    <TableHead>{t('admin.operators.createdAt')}</TableHead>
                     <TableHead className="text-right">{t('admin.operators.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -171,23 +281,30 @@ const AdminOperators: React.FC = () => {
                     <TableRow key={operator.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{operator.name}</p>
-                          <p className="text-sm text-muted-foreground">{operator.slug}</p>
+                          <p className="font-medium">{operator.profile?.full_name || '-'}</p>
+                          <p className="text-sm text-muted-foreground">{operator.profile?.phone || '-'}</p>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <SubscriptionStatusBadge 
-                          status={operator.subscription_status as SubscriptionStatus}
-                          daysRemaining={getDaysRemaining(operator.subscription_expires_at)}
-                        />
+                        {operator.operator ? (
+                          <Link 
+                            to={`/admin/subscribers/${operator.operator.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {operator.operator.name}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        {operator.subscription_expires_at 
-                          ? format(new Date(operator.subscription_expires_at), 'PP', { locale: dateLocale })
-                          : '-'}
+                        {getRoleBadge(operator.role)}
                       </TableCell>
                       <TableCell>
-                        {operator.subscription_price_huf?.toLocaleString(language === 'hu' ? 'hu-HU' : 'en-US')} {language === 'hu' ? 'Ft/hó' : 'HUF/mo'}
+                        {getStatusBadge(operator.profile?.status)}
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(operator.created_at), 'PP', { locale: dateLocale })}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -200,28 +317,11 @@ const AdminOperators: React.FC = () => {
                             <DropdownMenuLabel>{t('admin.operators.actions')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
-                              onClick={() => updateOperatorStatus(operator.id, 'active')}
+                              onClick={() => toggleOperatorStatus(operator.user_id, operator.profile?.status || '')}
                             >
-                              {t('admin.operators.activate')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => extendSubscription(operator.id, 1)}
-                            >
-                              <Calendar className="w-4 h-4 mr-2" />
-                              {t('admin.operators.addMonth')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => extendSubscription(operator.id, 12)}
-                            >
-                              <Calendar className="w-4 h-4 mr-2" />
-                              {t('admin.operators.addYear')}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => updateOperatorStatus(operator.id, 'expired')}
-                              className="text-destructive"
-                            >
-                              {t('admin.operators.markExpired')}
+                              {operator.profile?.status === 'active' 
+                                ? t('admin.operators.deactivate') 
+                                : t('admin.operators.activate')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
