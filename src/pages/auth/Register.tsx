@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { PasswordGenerator } from '@/components/auth/PasswordGenerator';
 import { validatePasswordStrength } from '@/lib/passwordValidation';
 
 const Register: React.FC = () => {
@@ -16,6 +17,7 @@ const Register: React.FC = () => {
     email: '',
     phone: '',
     password: '',
+    confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   
@@ -43,6 +45,19 @@ const Register: React.FC = () => {
         description: language === 'hu' 
           ? 'Kérlek add meg a telefonszámot nemzetközi formátumban (pl. +36 30 123 4567)'
           : 'Please enter your phone number in international format (e.g., +36 30 123 4567)',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate password confirmation
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: language === 'hu' ? 'Jelszavak nem egyeznek' : 'Passwords do not match',
+        description: language === 'hu'
+          ? 'A két jelszó mező tartalma nem egyezik.'
+          : 'The password confirmation does not match.',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -187,10 +202,32 @@ const Register: React.FC = () => {
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value, confirmPassword: '' })}
                 required
               />
+              <PasswordGenerator 
+                onAccept={(password) => setFormData({ ...formData, password, confirmPassword: password })} 
+              />
               <PasswordStrengthIndicator password={formData.password} userName={formData.email} fullName={formData.name} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">
+                {language === 'hu' ? 'Jelszó megerősítése' : 'Confirm Password'}
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                required
+              />
+              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <p className="text-xs text-destructive">
+                  {language === 'hu' ? 'A jelszavak nem egyeznek' : 'Passwords do not match'}
+                </p>
+              )}
             </div>
 
             <Button
@@ -198,7 +235,7 @@ const Register: React.FC = () => {
               variant="gradient"
               className="w-full"
               size="lg"
-              disabled={isLoading || !passwordStrength.isStrong}
+              disabled={isLoading || !passwordStrength.isStrong || formData.password !== formData.confirmPassword}
             >
               {isLoading ? (
                 <>
