@@ -1,0 +1,196 @@
+@startuml Use Case Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+
+title Vári Gyula Sétarepülés Platform - Use Case Diagram
+
+left to right direction
+
+' Actors
+actor "Super Admin\n(Platform Tulajdonos)" as SA #LightBlue
+actor "Operator Admin\n(Előfizető Admin)" as OA #LightGreen
+actor "Operator Staff\n(Munkatárs)" as OS #LightYellow
+actor "User\n(Ügyfél)" as U #LightPink
+actor "Visitor\n(Látogató)" as V #LightGray
+
+' System boundary
+rectangle "Vári Gyula Sétarepülés Platform" {
+  
+  ' Public Use Cases
+  package "Publikus Funkciók" as PF {
+    usecase "Főoldal megtekintése" as UC_Home
+    usecase "Hírek böngészése" as UC_News
+    usecase "Rólam oldal" as UC_About
+    usecase "Repülőcsomagok böngészése" as UC_BrowsePackages
+    usecase "Időpontok megtekintése" as UC_ViewSlots
+    usecase "Nyelv váltás" as UC_Language
+  }
+  
+  ' Auth Use Cases
+  package "Autentikáció" as AUTH {
+    usecase "Regisztráció" as UC_Register
+    usecase "Bejelentkezés" as UC_Login
+    usecase "Kijelentkezés" as UC_Logout
+    usecase "Jelszó módosítás" as UC_ChangePassword
+  }
+  
+  ' User Use Cases
+  package "Ügyfél Funkciók" as UF {
+    usecase "Foglalás létrehozása" as UC_CreateBooking
+    usecase "Foglalások megtekintése" as UC_ViewBookings
+    usecase "Foglalás lemondása" as UC_CancelBooking
+    usecase "Ajándékutalvány vásárlása" as UC_BuyVoucher
+    usecase "Utalványok kezelése" as UC_ManageVouchers
+    usecase "Kuponkód beváltása" as UC_RedeemCoupon
+    usecase "Várólistára feliratkozás" as UC_JoinWaitlist
+    usecase "Értesítések megtekintése" as UC_ViewNotifications
+    usecase "Profil szerkesztése" as UC_EditProfile
+  }
+  
+  ' Operator Staff Use Cases
+  package "Munkatárs Funkciók" as OSF {
+    usecase "Foglalások listázása" as UC_ListBookings
+    usecase "Csomagok megtekintése" as UC_ViewPackages
+    usecase "Felhasználók jóváhagyása" as UC_ApproveUsers
+  }
+  
+  ' Operator Admin Use Cases
+  package "Előfizető Admin Funkciók" as OAF {
+    usecase "Repülőcsomag kezelése\n(CRUD)" as UC_ManagePackages
+    usecase "Időpont kezelése\n(CRUD)" as UC_ManageSlots
+    usecase "Foglalás megerősítése" as UC_ConfirmBooking
+    usecase "Foglalás elutasítása" as UC_RejectBooking
+    usecase "Kuponkód létrehozása" as UC_CreateCoupon
+    usecase "Kedvezmény beállítása" as UC_SetDiscount
+    usecase "Kampány kezelése" as UC_ManageCampaign
+    usecase "Munkatárs kezelése" as UC_ManageStaff
+    usecase "Analitika megtekintése" as UC_ViewAnalytics
+    usecase "Számlázási adatok" as UC_BillingInfo
+    usecase "Várólista kezelése" as UC_ManageWaitlist
+  }
+  
+  ' Super Admin Use Cases
+  package "Platform Admin Funkciók" as SAF {
+    usecase "Előfizető létrehozása" as UC_CreateSubscriber
+    usecase "Előfizető kezelése" as UC_ManageSubscriber
+    usecase "Előfizetés meghosszabbítás" as UC_ExtendSubscription
+    usecase "Előfizetés felfüggesztése" as UC_SuspendSubscription
+    usecase "Operátor létrehozása" as UC_CreateOperator
+    usecase "Operátor kezelése" as UC_ManageOperators
+    usecase "Összes felhasználó" as UC_AllUsers
+    usecase "Platform statisztikák" as UC_PlatformStats
+    usecase "Felhasználó felfüggesztése" as UC_SuspendUser
+  }
+  
+  ' Bootstrap
+  package "Inicializálás" as INIT {
+    usecase "Bootstrap Super Admin\nlétrehozása" as UC_Bootstrap
+  }
+}
+
+' Visitor connections
+V --> UC_Home
+V --> UC_News
+V --> UC_About
+V --> UC_BrowsePackages
+V --> UC_ViewSlots
+V --> UC_Language
+V --> UC_Register
+V --> UC_Login
+
+' User connections (inherits Visitor)
+U --> UC_Home
+U --> UC_News
+U --> UC_About
+U --> UC_BrowsePackages
+U --> UC_ViewSlots
+U --> UC_Language
+U --> UC_Login
+U --> UC_Logout
+U --> UC_ChangePassword
+U --> UC_CreateBooking
+U --> UC_ViewBookings
+U --> UC_CancelBooking
+U --> UC_BuyVoucher
+U --> UC_ManageVouchers
+U --> UC_RedeemCoupon
+U --> UC_JoinWaitlist
+U --> UC_ViewNotifications
+U --> UC_EditProfile
+
+' Operator Staff connections (inherits User capabilities for their operator)
+OS --> UC_Login
+OS --> UC_Logout
+OS --> UC_ListBookings
+OS --> UC_ViewPackages
+OS --> UC_ApproveUsers
+OS --> UC_ViewNotifications
+
+' Operator Admin connections (inherits Staff)
+OA --> UC_Login
+OA --> UC_Logout
+OA --> UC_ListBookings
+OA --> UC_ViewPackages
+OA --> UC_ApproveUsers
+OA --> UC_ManagePackages
+OA --> UC_ManageSlots
+OA --> UC_ConfirmBooking
+OA --> UC_RejectBooking
+OA --> UC_CreateCoupon
+OA --> UC_SetDiscount
+OA --> UC_ManageCampaign
+OA --> UC_ManageStaff
+OA --> UC_ViewAnalytics
+OA --> UC_BillingInfo
+OA --> UC_ManageWaitlist
+OA --> UC_ViewNotifications
+
+' Super Admin connections
+SA --> UC_Login
+SA --> UC_Logout
+SA --> UC_CreateSubscriber
+SA --> UC_ManageSubscriber
+SA --> UC_ExtendSubscription
+SA --> UC_SuspendSubscription
+SA --> UC_CreateOperator
+SA --> UC_ManageOperators
+SA --> UC_AllUsers
+SA --> UC_PlatformStats
+SA --> UC_SuspendUser
+SA --> UC_Bootstrap
+
+' Include/Extend relationships
+UC_CreateBooking ..> UC_RedeemCoupon : <<include>>
+UC_CreateBooking ..> UC_ViewSlots : <<include>>
+UC_JoinWaitlist ..> UC_ViewSlots : <<include>>
+UC_BuyVoucher ..> UC_BrowsePackages : <<include>>
+
+UC_ManagePackages ..> UC_SetDiscount : <<extend>>
+UC_ManagePackages ..> UC_ManageCampaign : <<extend>>
+
+UC_CreateSubscriber ..> UC_CreateOperator : <<include>>
+
+' Notes
+note right of UC_Bootstrap
+  Csak ha nincs még
+  Super Admin a rendszerben
+end note
+
+note right of UC_ApproveUsers
+  Staff csak akkor,
+  ha az Admin engedélyezte
+end note
+
+note right of UC_CreateBooking
+  Csak aktív státuszú
+  felhasználók számára
+end note
+
+note bottom of SAF
+  Super Admin műveletek
+  csak /admin/* útvonalon
+  érhetők el
+end note
+
+@enduml

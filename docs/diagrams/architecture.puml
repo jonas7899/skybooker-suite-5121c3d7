@@ -1,0 +1,147 @@
+@startuml Architecture Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+
+title Vári Gyula Sétarepülés Platform - Architektúra Diagram
+
+' Actors
+actor "Super Admin" as SA
+actor "Operator Admin" as OA
+actor "Operator Staff" as OS
+actor "User (Ügyfél)" as U
+
+' Frontend Layer
+package "Frontend Layer" as FE {
+  [React SPA] as ReactApp
+  [React Router] as Router
+  [TanStack Query] as TQ
+  
+  package "Context Providers" {
+    [AuthContext] as AuthCtx
+    [LanguageContext] as LangCtx
+  }
+  
+  package "UI Components" {
+    [shadcn/ui] as ShadcnUI
+    [Layouts] as Layouts
+    [Pages] as Pages
+  }
+  
+  package "Custom Hooks" {
+    [useAuth] as UseAuth
+    [useBookings] as UseBookings
+    [useTimeSlots] as UseTimeSlots
+    [usePricing] as UsePricing
+    [useNotifications] as UseNotifications
+  }
+}
+
+' API Layer
+package "API Layer" as API {
+  [Supabase Client] as SupaClient
+  [REST API] as RestAPI
+  [Realtime] as Realtime
+}
+
+' Backend Layer
+package "Supabase Backend" as BE {
+  package "Auth Service" {
+    [JWT Authentication] as JWT
+    [Session Management] as Session
+    [User Management] as UserMgmt
+  }
+  
+  package "Database" {
+    database "PostgreSQL" as PG {
+      [operators] as TblOperators
+      [profiles] as TblProfiles
+      [user_roles] as TblUserRoles
+      [flight_packages] as TblPackages
+      [flight_time_slots] as TblSlots
+      [bookings] as TblBookings
+      [notifications] as TblNotifications
+      [gift_vouchers] as TblVouchers
+      [coupons] as TblCoupons
+      [campaigns] as TblCampaigns
+      [waiting_list] as TblWaitingList
+      [booking_reminders] as TblReminders
+    }
+    
+    [RLS Policies] as RLS
+    [DB Functions] as DBFuncs
+    [Triggers] as Triggers
+  }
+  
+  package "Edge Functions" {
+    [process-reminders] as EdgeReminders
+  }
+}
+
+' Connections - Users to Frontend
+SA --> ReactApp
+OA --> ReactApp
+OS --> ReactApp
+U --> ReactApp
+
+' Frontend internal connections
+ReactApp --> Router
+ReactApp --> TQ
+ReactApp --> AuthCtx
+ReactApp --> LangCtx
+Router --> Layouts
+Layouts --> Pages
+Pages --> ShadcnUI
+Pages --> UseAuth
+Pages --> UseBookings
+Pages --> UseTimeSlots
+Pages --> UsePricing
+Pages --> UseNotifications
+
+' Frontend to API
+TQ --> SupaClient
+UseAuth --> SupaClient
+UseBookings --> SupaClient
+UseTimeSlots --> SupaClient
+UsePricing --> SupaClient
+UseNotifications --> SupaClient
+
+' API Layer
+SupaClient --> RestAPI
+SupaClient --> Realtime
+SupaClient --> JWT
+
+' Backend connections
+RestAPI --> PG
+JWT --> Session
+Session --> UserMgmt
+UserMgmt --> TblProfiles
+UserMgmt --> TblUserRoles
+
+' Database internal
+RLS --> PG
+DBFuncs --> PG
+Triggers --> PG
+
+' Edge Functions
+EdgeReminders --> TblReminders
+EdgeReminders --> TblNotifications
+
+' Notes
+note right of RLS
+  Row Level Security
+  - has_role()
+  - get_user_operator_id()
+  - is_operator_subscription_active()
+end note
+
+note right of Triggers
+  Automatic Triggers:
+  - update_slot_passengers
+  - create_booking_notification
+  - create_booking_reminders
+  - notify_waiting_list
+  - notify_profile_status_change
+end note
+
+@enduml
