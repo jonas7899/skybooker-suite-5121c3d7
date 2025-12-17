@@ -1,0 +1,314 @@
+@startuml Class Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classAttributeIconSize 0
+
+title Vári Gyula Sétarepülés Platform - Osztály Diagram
+
+' Enums
+enum ProfileStatus {
+  bootstrap
+  pending
+  active
+  rejected
+  inactive
+  suspended
+}
+
+enum AppRole {
+  super_admin
+  operator_admin
+  operator_staff
+  user
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+}
+
+enum TimeSlotStatus {
+  available
+  booked
+  closed
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+enum DiscountCondition {
+  always
+  weekday
+  weekend
+  specific_days
+}
+
+' Interfaces / Types
+interface Profile {
+  +id: string
+  +full_name: string
+  +phone?: string
+  +status: ProfileStatus
+  +is_bootstrap: boolean
+  +rejected_until?: Date
+  +created_at: Date
+  +updated_at: Date
+}
+
+interface UserRole {
+  +id: string
+  +user_id: string
+  +role: AppRole
+  +operator_id?: string
+  +approved_by?: string
+  +approved_at?: Date
+  +rejected_at?: Date
+  +rejection_reason?: string
+  +created_at: Date
+}
+
+interface Operator {
+  +id: string
+  +name: string
+  +slug: string
+  +subscription_status: string
+  +subscription_plan?: string
+  +subscription_price_huf?: number
+  +subscription_started_at?: Date
+  +subscription_expires_at?: Date
+  +billing_email?: string
+  +billing_name?: string
+  +created_at: Date
+}
+
+interface FlightPackage {
+  +id: string
+  +operator_id: string
+  +name: string
+  +short_description?: string
+  +detailed_description?: string
+  +route_description?: string
+  +duration_minutes: number
+  +difficulty_level: string
+  +recommended_audience?: string
+  +base_price_huf: number
+  +max_passengers: number
+  +is_active: boolean
+  +image_url?: string
+  +created_at: Date
+  +updated_at: Date
+}
+
+interface TimeSlot {
+  +id: string
+  +operator_id: string
+  +flight_package_id?: string
+  +slot_date: Date
+  +start_time: string
+  +duration_minutes: number
+  +max_passengers: number
+  +current_passengers: number
+  +status: TimeSlotStatus
+  +created_at: Date
+  +updated_at: Date
+}
+
+interface Booking {
+  +id: string
+  +user_id: string
+  +flight_package_id: string
+  +time_slot_id: string
+  +passenger_count: number
+  +passenger_details?: PassengerDetail[]
+  +total_price_huf: number
+  +status: BookingStatus
+  +notes?: string
+  +created_at: Date
+  +updated_at: Date
+}
+
+interface PassengerDetail {
+  +name: string
+  +weight: number
+  +age?: number
+}
+
+interface Notification {
+  +id: string
+  +user_id: string
+  +title: string
+  +message: string
+  +type: string
+  +is_read: boolean
+  +related_booking_id?: string
+  +created_at: Date
+}
+
+interface GiftVoucher {
+  +id: string
+  +operator_id: string
+  +purchaser_user_id: string
+  +flight_package_id: string
+  +voucher_code: string
+  +recipient_name: string
+  +recipient_email?: string
+  +personal_message?: string
+  +purchase_price_huf: number
+  +status: string
+  +expires_at: Date
+  +redeemed_at?: Date
+  +redeemed_booking_id?: string
+  +created_at: Date
+  +updated_at: Date
+}
+
+interface Coupon {
+  +id: string
+  +operator_id: string
+  +code: string
+  +discount_type: DiscountType
+  +discount_value: number
+  +flight_package_id?: string
+  +usage_limit?: number
+  +times_used: number
+  +expires_at?: Date
+  +is_active: boolean
+  +created_at: Date
+  +updated_at: Date
+}
+
+' React Contexts
+class AuthContext <<Context>> {
+  +user: User | null
+  +session: Session | null
+  +profile: Profile | null
+  +userRole: UserRole | null
+  +isLoading: boolean
+  +isBootstrapUser: boolean
+  --
+  +signUp(email, password, fullName, phone?)
+  +signIn(identifier, password)
+  +signOut()
+  +refreshProfile()
+}
+
+class LanguageContext <<Context>> {
+  +language: 'hu' | 'en'
+  --
+  +setLanguage(lang)
+  +t(key): string
+}
+
+' Custom Hooks
+class useBookings <<Hook>> {
+  +bookings: Booking[]
+  +isLoading: boolean
+  --
+  +fetchBookings()
+  +createBooking(data)
+  +updateBooking(id, data)
+  +refetch()
+}
+
+class useTimeSlots <<Hook>> {
+  +timeSlots: TimeSlot[]
+  +isLoading: boolean
+  --
+  +fetchTimeSlots(operatorId, date?)
+  +createTimeSlot(data)
+  +updateTimeSlot(id, data)
+  +deleteTimeSlot(id)
+  +refetch()
+}
+
+class usePricing <<Hook>> {
+  +basePrice: number
+  +discounts: Discount[]
+  +finalPrice: number
+  +isLoading: boolean
+  --
+  +calculatePrice(packageId, date, coupon?)
+  +validateCoupon(code)
+}
+
+class useNotifications <<Hook>> {
+  +notifications: Notification[]
+  +unreadCount: number
+  +isLoading: boolean
+  --
+  +fetchNotifications()
+  +markAsRead(id)
+  +markAllAsRead()
+}
+
+class useSubscription <<Hook>> {
+  +operator: Operator | null
+  +subscriptionInfo: SubscriptionInfo
+  +isLoading: boolean
+  --
+  +updateBillingInfo(email, name)
+  +refetch()
+}
+
+class useAdminUsers <<Hook>> {
+  +pendingUsers: UserWithRole[]
+  +allUsers: UserWithRole[]
+  +isLoading: boolean
+  --
+  +approveUser(userId, approvedBy)
+  +rejectUser(userId, reason?)
+  +suspendUser(userId)
+  +activateUser(userId)
+  +refetch()
+}
+
+' React Components (Protected Routes)
+class AdminProtectedRoute <<Component>> {
+  --
+  Checks: super_admin role
+  Redirect: /admin/login or /
+}
+
+class OperatorProtectedRoute <<Component>> {
+  --
+  Checks: operator_admin or operator_staff role
+  Redirect: /belepes or /
+}
+
+class UserProtectedRoute <<Component>> {
+  --
+  Checks: active profile status
+  Redirect: /belepes or /
+}
+
+' Relationships
+Profile "1" -- "0..1" UserRole
+UserRole "*" -- "1" Operator : belongs to
+Operator "1" -- "*" FlightPackage
+FlightPackage "1" -- "*" TimeSlot
+TimeSlot "1" -- "*" Booking
+Profile "1" -- "*" Booking
+Profile "1" -- "*" Notification
+Booking "1" -- "*" Notification
+FlightPackage "1" -- "*" GiftVoucher
+Operator "1" -- "*" Coupon
+
+AuthContext ..> Profile : uses
+AuthContext ..> UserRole : uses
+useBookings ..> Booking : manages
+useTimeSlots ..> TimeSlot : manages
+usePricing ..> FlightPackage : calculates
+usePricing ..> Coupon : validates
+useNotifications ..> Notification : manages
+useSubscription ..> Operator : manages
+useAdminUsers ..> Profile : manages
+useAdminUsers ..> UserRole : manages
+
+AdminProtectedRoute ..> AuthContext : uses
+OperatorProtectedRoute ..> AuthContext : uses
+UserProtectedRoute ..> AuthContext : uses
+
+@enduml

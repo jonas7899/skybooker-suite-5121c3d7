@@ -1,0 +1,243 @@
+@startuml Database ERD
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam linetype ortho
+
+title Vári Gyula Sétarepülés Platform - Adatbázis ER Diagram
+
+' Entities
+
+entity "operators" as operators {
+  *id : uuid <<PK>>
+  --
+  *name : text
+  *slug : text <<unique>>
+  *subscription_status : text
+  subscription_plan : text
+  subscription_price_huf : integer
+  subscription_started_at : timestamptz
+  subscription_expires_at : timestamptz
+  billing_email : text
+  billing_name : text
+  created_at : timestamptz
+}
+
+entity "profiles" as profiles {
+  *id : uuid <<PK>> <<FK auth.users>>
+  --
+  *full_name : text
+  phone : text
+  *status : profile_status
+  *is_bootstrap : boolean
+  rejected_until : timestamptz
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "user_roles" as user_roles {
+  *id : uuid <<PK>>
+  --
+  *user_id : uuid <<FK profiles>>
+  *role : app_role
+  operator_id : uuid <<FK operators>>
+  approved_by : uuid <<FK profiles>>
+  approved_at : timestamptz
+  rejected_at : timestamptz
+  rejection_reason : text
+  created_at : timestamptz
+}
+
+entity "flight_packages" as flight_packages {
+  *id : uuid <<PK>>
+  --
+  *operator_id : uuid <<FK operators>>
+  *name : text
+  short_description : text
+  detailed_description : text
+  route_description : text
+  *duration_minutes : integer
+  *difficulty_level : text
+  recommended_audience : text
+  *base_price_huf : integer
+  *max_passengers : integer
+  *is_active : boolean
+  image_url : text
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "flight_time_slots" as flight_time_slots {
+  *id : uuid <<PK>>
+  --
+  *operator_id : uuid <<FK operators>>
+  flight_package_id : uuid <<FK flight_packages>>
+  *slot_date : date
+  *start_time : time
+  *duration_minutes : integer
+  *max_passengers : integer
+  *current_passengers : integer
+  *status : time_slot_status
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "bookings" as bookings {
+  *id : uuid <<PK>>
+  --
+  *user_id : uuid <<FK profiles>>
+  *flight_package_id : uuid <<FK flight_packages>>
+  *time_slot_id : uuid <<FK flight_time_slots>>
+  *passenger_count : integer
+  passenger_details : jsonb
+  *total_price_huf : integer
+  *status : booking_status
+  notes : text
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "booking_reminders" as booking_reminders {
+  *id : uuid <<PK>>
+  --
+  *booking_id : uuid <<FK bookings>>
+  *reminder_type : text
+  *scheduled_for : timestamptz
+  *sent : boolean
+  sent_at : timestamptz
+  created_at : timestamptz
+}
+
+entity "notifications" as notifications {
+  *id : uuid <<PK>>
+  --
+  *user_id : uuid <<FK profiles>>
+  *title : text
+  *message : text
+  *type : text
+  *is_read : boolean
+  related_booking_id : uuid <<FK bookings>>
+  created_at : timestamptz
+}
+
+entity "waiting_list" as waiting_list {
+  *id : uuid <<PK>>
+  --
+  *user_id : uuid <<FK profiles>>
+  *time_slot_id : uuid <<FK flight_time_slots>>
+  *flight_package_id : uuid <<FK flight_packages>>
+  *passenger_count : integer
+  *notified : boolean
+  created_at : timestamptz
+}
+
+entity "gift_vouchers" as gift_vouchers {
+  *id : uuid <<PK>>
+  --
+  *operator_id : uuid <<FK operators>>
+  *purchaser_user_id : uuid <<FK profiles>>
+  *flight_package_id : uuid <<FK flight_packages>>
+  *voucher_code : text <<unique>>
+  *recipient_name : text
+  recipient_email : text
+  personal_message : text
+  *purchase_price_huf : integer
+  *status : text
+  *expires_at : timestamptz
+  redeemed_at : timestamptz
+  redeemed_booking_id : uuid <<FK bookings>>
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "coupons" as coupons {
+  *id : uuid <<PK>>
+  --
+  *operator_id : uuid <<FK operators>>
+  *code : text <<unique>>
+  *discount_type : discount_type
+  *discount_value : integer
+  flight_package_id : uuid <<FK flight_packages>>
+  usage_limit : integer
+  *times_used : integer
+  expires_at : timestamptz
+  *is_active : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "package_discounts" as package_discounts {
+  *id : uuid <<PK>>
+  --
+  *flight_package_id : uuid <<FK flight_packages>>
+  *discount_type : discount_type
+  *discount_value : integer
+  *condition_type : discount_condition
+  condition_days : text[]
+  *is_active : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "campaigns" as campaigns {
+  *id : uuid <<PK>>
+  --
+  *flight_package_id : uuid <<FK flight_packages>>
+  *name : text
+  *discount_type : discount_type
+  *discount_value : integer
+  *starts_at : timestamptz
+  *ends_at : timestamptz
+  *is_active : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+' Relationships
+
+operators ||--o{ user_roles : "has"
+operators ||--o{ flight_packages : "offers"
+operators ||--o{ flight_time_slots : "schedules"
+operators ||--o{ gift_vouchers : "sells"
+operators ||--o{ coupons : "creates"
+
+profiles ||--o| user_roles : "has"
+profiles ||--o{ bookings : "makes"
+profiles ||--o{ notifications : "receives"
+profiles ||--o{ waiting_list : "joins"
+profiles ||--o{ gift_vouchers : "purchases"
+
+flight_packages ||--o{ flight_time_slots : "has"
+flight_packages ||--o{ bookings : "booked as"
+flight_packages ||--o{ waiting_list : "waited for"
+flight_packages ||--o{ gift_vouchers : "redeemable for"
+flight_packages ||--o{ coupons : "applicable to"
+flight_packages ||--o{ package_discounts : "has"
+flight_packages ||--o{ campaigns : "has"
+
+flight_time_slots ||--o{ bookings : "contains"
+flight_time_slots ||--o{ waiting_list : "has waiters"
+
+bookings ||--o{ booking_reminders : "has"
+bookings ||--o| notifications : "triggers"
+bookings ||--o| gift_vouchers : "redeems"
+
+user_roles }o--|| profiles : "approved_by"
+
+' Legend
+legend right
+  **Legend**
+  ----
+  <<PK>> Primary Key
+  <<FK>> Foreign Key
+  * Required field
+  
+  **Enums:**
+  profile_status: bootstrap, pending, active, rejected, inactive, suspended
+  app_role: super_admin, operator_admin, operator_staff, user
+  booking_status: pending, confirmed, cancelled
+  time_slot_status: available, booked, closed
+  discount_type: percentage, fixed
+  discount_condition: always, weekday, weekend, specific_days
+endlegend
+
+@enduml
