@@ -227,6 +227,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           max_passengers: number
+          min_support_tier_id: string | null
           name: string
           operator_id: string
           recommended_audience: string | null
@@ -244,6 +245,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           max_passengers?: number
+          min_support_tier_id?: string | null
           name: string
           operator_id: string
           recommended_audience?: string | null
@@ -261,6 +263,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           max_passengers?: number
+          min_support_tier_id?: string | null
           name?: string
           operator_id?: string
           recommended_audience?: string | null
@@ -269,6 +272,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "flight_packages_min_support_tier_id_fkey"
+            columns: ["min_support_tier_id"]
+            isOneToOne: false
+            referencedRelation: "support_tiers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "flight_packages_operator_id_fkey"
             columns: ["operator_id"]
@@ -452,6 +462,47 @@ export type Database = {
           },
         ]
       }
+      operator_settings: {
+        Row: {
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          created_at: string
+          id: string
+          operator_id: string
+          support_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          operator_id: string
+          support_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          operator_id?: string
+          support_description?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_settings_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: true
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operators: {
         Row: {
           billing_email: string | null
@@ -571,6 +622,56 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tiers: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          max_amount_eur: number | null
+          min_amount_eur: number
+          name: string
+          operator_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          max_amount_eur?: number | null
+          min_amount_eur: number
+          name: string
+          operator_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          max_amount_eur?: number | null
+          min_amount_eur?: number
+          name?: string
+          operator_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tiers_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           approved_at: string | null
@@ -606,6 +707,73 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_supports: {
+        Row: {
+          amount_eur: number
+          booking_id: string | null
+          booking_used: boolean
+          created_at: string
+          id: string
+          notes: string | null
+          operator_id: string
+          payment_date: string
+          set_by: string
+          support_tier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_eur: number
+          booking_id?: string | null
+          booking_used?: boolean
+          created_at?: string
+          id?: string
+          notes?: string | null
+          operator_id: string
+          payment_date: string
+          set_by: string
+          support_tier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_eur?: number
+          booking_id?: string | null
+          booking_used?: boolean
+          created_at?: string
+          id?: string
+          notes?: string | null
+          operator_id?: string
+          payment_date?: string
+          set_by?: string
+          support_tier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_supports_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_supports_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_supports_support_tier_id_fkey"
+            columns: ["support_tier_id"]
+            isOneToOne: false
+            referencedRelation: "support_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       waiting_list: {
         Row: {
@@ -657,12 +825,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_user_book_package: {
+        Args: { p_package_id: string; p_user_id: string }
+        Returns: boolean
+      }
       check_super_admin_exists: { Args: never; Returns: boolean }
       create_first_super_admin: {
         Args: { _full_name: string; _phone?: string; _user_id: string }
         Returns: boolean
       }
       generate_voucher_code: { Args: never; Returns: string }
+      get_user_active_support_tier: {
+        Args: { p_operator_id: string; p_user_id: string }
+        Returns: string
+      }
       get_user_operator_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

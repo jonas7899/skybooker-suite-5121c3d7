@@ -39,7 +39,9 @@ import UserVouchers from "./pages/dashboard/UserVouchers";
 import PurchaseVoucher from "./pages/vouchers/PurchaseVoucher";
 import OperatorAnalytics from "./pages/operator/OperatorAnalytics";
 
-
+import EditProfile from "./pages/user/EditProfile";
+import ChangePassword from "./pages/user/ChangePassword";
+import Support from "./pages/user/Support";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +71,11 @@ const App = () => (
               {/* Auth Routes */}
               <Route path="/belepes" element={<Login />} />
               <Route path="/regisztracio" element={<Register />} />
+
+              {/* User Profile Routes */}
+              <Route path="/profil" element={<EditProfile />} />
+              <Route path="/jelszo-modositas" element={<ChangePassword />} />
+              <Route path="/tamogatas" element={<Support />} />
 
               {/* User Dashboard Routes (protected, active users only) */}
               <Route path="/dashboard" element={<UserProtectedRoute />}>

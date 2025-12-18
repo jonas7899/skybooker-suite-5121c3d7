@@ -1,18 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Menu, X, ChevronRight, Phone, Mail, Lock } from 'lucide-react';
+import { Menu, X, ChevronRight, Phone, Mail, Lock, User, KeyRound, Heart, LogOut, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const PublicLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { t } = useLanguage();
-  const { isAuthenticated, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const { isAuthenticated, signOut, profile } = useAuth();
   const windfinderRef = useRef<HTMLDivElement>(null);
 
   // Public paths where WindFinder widget should be displayed
@@ -37,12 +45,12 @@ const PublicLayout: React.FC = () => {
     { href: '/', label: t('nav.home') },
     { href: '/hirek', label: t('nav.news') },
     { href: '/rolam', label: t('nav.about') },
-    { href: '/idopontok', label: t('nav.schedule') },
+    { href: '/kapcsolat', label: t('nav.contact') },
   ];
 
   // Protected links (auth required)
   const protectedLinks = [
-    { href: '/kapcsolat', label: t('nav.contact') },
+    { href: '/idopontok', label: t('nav.schedule') },
     { href: '/arckepcsarnok', label: t('nav.gallery') },
     { href: '/forum', label: t('nav.forum') },
   ];
@@ -86,9 +94,34 @@ const PublicLayout: React.FC = () => {
             <div className="hidden md:flex items-center gap-4">
               <LanguageSwitcher />
               {isAuthenticated ? (
-                <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  {t('auth.logout')}
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <User className="w-4 h-4" />
+                      <span className="max-w-32 truncate">{profile?.full_name || 'Profil'}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => navigate('/profil')}>
+                      <User className="w-4 h-4 mr-2" />
+                      {language === 'hu' ? 'Profilom szerkesztése' : 'Edit Profile'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/jelszo-modositas')}>
+                      <KeyRound className="w-4 h-4 mr-2" />
+                      {language === 'hu' ? 'Jelszó módosítás' : 'Change Password'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/tamogatas')}>
+                      <Heart className="w-4 h-4 mr-2" />
+                      {language === 'hu' ? 'Támogatás' : 'Support'}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => signOut()}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {t('auth.logout')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <Button variant="default" size="sm" asChild>
                   <Link to="/belepes">{t('auth.login')}</Link>
@@ -134,14 +167,42 @@ const PublicLayout: React.FC = () => {
                 </Link>
               );
             })}
-            <div className="flex items-center gap-2 pt-4 border-t border-border">
+            <div className="pt-4 border-t border-border space-y-2">
               <LanguageSwitcher />
               {isAuthenticated ? (
-                <Button variant="outline" size="sm" onClick={() => signOut()} className="flex-1">
-                  {t('auth.logout')}
-                </Button>
+                <>
+                  <p className="text-sm font-medium px-2">{profile?.full_name}</p>
+                  <Link
+                    to="/profil"
+                    className="menu-item text-sm"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    {language === 'hu' ? 'Profilom szerkesztése' : 'Edit Profile'}
+                  </Link>
+                  <Link
+                    to="/jelszo-modositas"
+                    className="menu-item text-sm"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    {language === 'hu' ? 'Jelszó módosítás' : 'Change Password'}
+                  </Link>
+                  <Link
+                    to="/tamogatas"
+                    className="menu-item text-sm"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Heart className="w-4 h-4" />
+                    {language === 'hu' ? 'Támogatás' : 'Support'}
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={() => { signOut(); setMobileMenuOpen(false); }} className="w-full">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t('auth.logout')}
+                  </Button>
+                </>
               ) : (
-                <Button variant="default" size="sm" asChild className="flex-1">
+                <Button variant="default" size="sm" asChild className="w-full">
                   <Link to="/belepes">{t('auth.login')}</Link>
                 </Button>
               )}
@@ -276,7 +337,7 @@ const PublicLayout: React.FC = () => {
                     <p className="text-muted-foreground">
                       {t('auth.noAccount')}{' '}
                       <Link to="/regisztracio" className="text-primary hover:underline">
-                        {t('auth.createAccount')}
+                        {t('auth.register')}
                       </Link>
                     </p>
                   </div>

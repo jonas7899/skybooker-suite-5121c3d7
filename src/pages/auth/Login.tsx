@@ -130,12 +130,16 @@ const Login: React.FC = () => {
               )}
             </Button>
           </form>
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            {t('auth.noAccount')}{' '}
-            <Link to="/regisztracio" className="text-primary hover:underline">
-              {t('auth.createAccount')}
+          <div className="mt-6 space-y-3">
+            <p className="text-center text-sm text-muted-foreground">
+              {t('auth.noAccount')}
+            </p>
+            <Link to="/regisztracio" className="block">
+              <Button variant="outline" className="w-full">
+                {t('auth.register')}
+              </Button>
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
