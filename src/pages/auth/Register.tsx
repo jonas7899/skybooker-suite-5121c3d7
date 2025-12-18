@@ -138,12 +138,17 @@ const Register: React.FC = () => {
             </div>
           </Link>
           <h1 className="text-2xl font-display font-bold mt-6 mb-2">
-            {language === 'hu' ? 'Fiók létrehozása' : 'Create your account'}
+            {language === 'hu' ? 'Regisztráció' : 'Registration'}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {language === 'hu' 
-              ? 'Regisztrálj és foglald le repülésedet!'
-              : 'Register and book your flight!'}
+              ? 'Az adatok elküldése után a stáb jóváhagyása kell, hogy beléphess.'
+              : 'After submitting, staff approval is required before you can log in.'}
+          </p>
+          <p className="text-primary text-sm mt-2 font-medium">
+            {language === 'hu' 
+              ? 'Ha támogatod az egyesületet, ajándékba kapsz tőlünk egy élményrepülést.'
+              : 'If you support the association, you will receive a complimentary experience flight as a gift.'}
           </p>
         </div>
 
@@ -157,7 +162,6 @@ const Register: React.FC = () => {
               <Input
                 id="name"
                 type="text"
-                placeholder={language === 'hu' ? 'Minta János' : 'John Doe'}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -169,7 +173,6 @@ const Register: React.FC = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="pelda@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -240,18 +243,18 @@ const Register: React.FC = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  {language === 'hu' ? 'Regisztráció...' : 'Registering...'}
+                  {language === 'hu' ? 'Küldés...' : 'Submitting...'}
                 </>
               ) : (
-                language === 'hu' ? 'Regisztráció' : 'Create Account'
+                language === 'hu' ? 'Adatok beküldése' : 'Submit'
               )}
             </Button>
 
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              {language === 'hu'
-                ? 'A regisztrációd jóváhagyásra vár, miután a stáb ellenőrizte.'
-                : 'Your registration will be pending approval after staff verification.'}
-            </p>
+            <Link to="/" className="block">
+              <Button variant="outline" className="w-full" type="button">
+                {language === 'hu' ? 'Vissza a főoldalra' : 'Back to Home'}
+              </Button>
+            </Link>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
