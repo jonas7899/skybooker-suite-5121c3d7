@@ -107,12 +107,25 @@ export const useSupportTier = (operatorId?: string) => {
 
   const canBook = !!userSupport && !userSupport.booking_used;
 
+  // Check if user can book a specific package based on tier requirements
+  const canBookPackage = (minTierSortOrder?: number | null): boolean => {
+    // If no support at all, can't book anything
+    if (!canBook || !currentTier) return false;
+    
+    // If no minimum tier required, user can book
+    if (minTierSortOrder === null || minTierSortOrder === undefined) return true;
+    
+    // User's tier must be >= the minimum required tier (higher sort_order = higher tier)
+    return currentTier.sort_order >= minTierSortOrder;
+  };
+
   return {
     supportTiers,
     userSupport,
     currentTier,
     isLoading,
     canBook,
+    canBookPackage,
     refetch: async () => {
       await Promise.all([fetchSupportTiers(), fetchUserSupport()]);
     },
