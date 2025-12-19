@@ -55,7 +55,7 @@ const DashboardLayout: React.FC = () => {
         return [
           { href: '/operator', label: t('dashboard.nav.dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
           { href: '/operator/calendar', label: t('dashboard.nav.calendar'), icon: <Calendar className="w-5 h-5" /> },
-          { href: '/operator/flights', label: t('dashboard.nav.flights'), icon: <Plane className="w-5 h-5" /> },
+          { href: '/operator/packages', label: t('dashboard.nav.packages'), icon: <Plane className="w-5 h-5" /> },
           { href: '/operator/bookings', label: t('dashboard.nav.bookings'), icon: <Ticket className="w-5 h-5" /> },
           { href: '/operator/supporters', label: t('dashboard.nav.supporters'), icon: <Heart className="w-5 h-5" /> },
           { href: '/operator/support-tiers', label: t('dashboard.nav.supportTiers'), icon: <Medal className="w-5 h-5" /> },
