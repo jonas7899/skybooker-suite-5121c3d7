@@ -1,1 +1,7 @@
 project_id = "jeoegtzuubcrauhkuhlz"
+
+[functions.process-reminders]
+verify_jwt = false
+
+[functions.send-notification-email]
+verify_jwt = true
