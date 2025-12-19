@@ -33,6 +33,7 @@ import OperatorPricing from "./pages/operator/OperatorPricing";
 import OperatorBilling from "./pages/operator/OperatorBilling";
 import OperatorSupportTiers from "./pages/operator/OperatorSupportTiers";
 import OperatorBankSettings from "./pages/operator/OperatorBankSettings";
+import OperatorSupporters from "./pages/operator/OperatorSupporters";
 import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
 import BookingCheckout from "./pages/booking/BookingCheckout";
 
@@ -112,6 +113,7 @@ const App = () => (
                   <Route path="analytics" element={<OperatorAnalytics />} />
                   <Route path="support-tiers" element={<OperatorSupportTiers />} />
                   <Route path="bank-settings" element={<OperatorBankSettings />} />
+                  <Route path="supporters" element={<OperatorSupporters />} />
                 </Route>
               </Route>
 
