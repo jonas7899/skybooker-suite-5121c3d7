@@ -276,6 +276,8 @@ export const translations: Translations = {
   'admin.operators.removeStaffTitle': { hu: 'Staff tag eltávolítása', en: 'Remove Staff Member' },
   'admin.operators.removeStaffDescription': { hu: 'Biztosan el szeretnéd távolítani ezt a staff tagot?', en: 'Are you sure you want to remove this staff member?' },
   'admin.operators.staffRemoved': { hu: 'Staff tag sikeresen eltávolítva', en: 'Staff member removed successfully' },
+  'admin.operators.staffActivated': { hu: 'Staff tag aktiválva', en: 'Staff member activated' },
+  'admin.operators.staffDeactivated': { hu: 'Staff tag inaktiválva', en: 'Staff member deactivated' },
   'common.save': { hu: 'Mentés', en: 'Save' },
   'common.delete': { hu: 'Törlés', en: 'Delete' },
   'common.loading': { hu: 'Betöltés...', en: 'Loading...' },
