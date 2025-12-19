@@ -421,6 +421,65 @@ export type Database = {
           },
         ]
       }
+      news_articles: {
+        Row: {
+          content_en: string | null
+          content_hu: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_published: boolean
+          link_text_en: string | null
+          link_text_hu: string | null
+          link_url: string | null
+          operator_id: string
+          sort_order: number
+          title_en: string | null
+          title_hu: string
+          updated_at: string
+        }
+        Insert: {
+          content_en?: string | null
+          content_hu: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          link_text_en?: string | null
+          link_text_hu?: string | null
+          link_url?: string | null
+          operator_id: string
+          sort_order?: number
+          title_en?: string | null
+          title_hu: string
+          updated_at?: string
+        }
+        Update: {
+          content_en?: string | null
+          content_hu?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          link_text_en?: string | null
+          link_text_hu?: string | null
+          link_url?: string | null
+          operator_id?: string
+          sort_order?: number
+          title_en?: string | null
+          title_hu?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_articles_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

@@ -35,6 +35,7 @@ import OperatorSupportTiers from "./pages/operator/OperatorSupportTiers";
 import OperatorBankSettings from "./pages/operator/OperatorBankSettings";
 import OperatorSupporters from "./pages/operator/OperatorSupporters";
 import OperatorPackages from "./pages/operator/OperatorPackages";
+import OperatorNews from "./pages/operator/OperatorNews";
 import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
 import BookingCheckout from "./pages/booking/BookingCheckout";
 
@@ -110,6 +111,7 @@ const App = () => (
                   <Route path="calendar" element={<OperatorCalendar />} />
                   <Route path="packages" element={<OperatorPackages />} />
                   <Route path="bookings" element={<OperatorBookings />} />
+                  <Route path="news" element={<OperatorNews />} />
                   <Route path="pricing" element={<OperatorPricing />} />
                   <Route path="billing" element={<OperatorBilling />} />
                   <Route path="analytics" element={<OperatorAnalytics />} />
