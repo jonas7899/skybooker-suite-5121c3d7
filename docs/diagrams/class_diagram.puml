@@ -74,7 +74,7 @@ interface Operator {
   +id: string
   +name: string
   +slug: string
-  +subscription_status: string
+  +subscription_status: SubscriptionStatus
   +subscription_plan?: string
   +subscription_price_huf?: number
   +subscription_started_at?: Date
@@ -82,6 +82,13 @@ interface Operator {
   +billing_email?: string
   +billing_name?: string
   +created_at: Date
+}
+
+enum SubscriptionStatus {
+  trial
+  active
+  expired
+  cancelled
 }
 
 interface FlightPackage {
@@ -256,12 +263,15 @@ class useSubscription <<Hook>> {
 class useAdminUsers <<Hook>> {
   +pendingUsers: UserWithRole[]
   +allUsers: UserWithRole[]
+  +operators: OperatorWithStaff[]
   +isLoading: boolean
   --
   +approveUser(userId, approvedBy)
   +rejectUser(userId, reason?)
   +suspendUser(userId)
   +activateUser(userId)
+  +toggleStaffStatus(userId, newStatus)
+  +updateOperatorSubscription(operatorId, data)
   +refetch()
 }
 

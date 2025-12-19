@@ -2,8 +2,8 @@
 
 ## Vári Gyula Sétarepülés Platform
 
-**Verzió:** 1.0  
-**Dátum:** 2024-12-17  
+**Verzió:** 1.1  
+**Dátum:** 2024-12-19  
 **Státusz:** Aktív fejlesztés alatt
 
 ---
@@ -145,7 +145,38 @@ A Vári Gyula Sétarepülés Platform egy modern, felhő-alapú SaaS alkalmazás
 - **Jogosult:** Super Admin
 - **Művelet:** Lejárati dátum kiterjesztése megadott hónapokkal
 
-### 3.3 Repülőcsomag Kezelés
+#### FR-SUB-004: Automatikus Előfizetés Lejárat Értesítés
+- **Trigger:** Napi cron job (8:00 UTC)
+- **Feltétel:** Előfizetés lejárata 7 napon belüli
+- **Értesítési intervallumok:**
+  - 7 nappal a lejárat előtt: Emlékeztető email
+  - 3 nappal a lejárat előtt: Sürgős emlékeztető
+  - 1 nappal a lejárat előtt: Utolsó emlékeztető
+  - Lejáratkor: Értesítés + státusz → `expired`
+- **Címzett:** `billing_email` mező
+- **Email Provider:** Resend.com
+
+#### FR-SUB-005: Operátor Előfizetés Kezelés Admin Felületen
+- **Jogosult:** Super Admin
+- **Helyszín:** `/admin/operators` oldal
+- **Funkciók:**
+  - Előfizetési csomag beállítása (monthly/yearly)
+  - Előfizetési státusz módosítása (trial/active/suspended/cancelled)
+  - Lejárati dátum beállítása
+  - Havi díj (HUF) beállítása
+  - Gyors aktiválás/deaktiválás gomb
+
+### 3.3 Staff Kezelés
+
+#### FR-STAFF-001: Staff Tag Státusz Módosítása
+- **Jogosult:** Super Admin
+- **Helyszín:** `/admin/operators` oldal, Staff tábla
+- **Műveletek:**
+  - Staff aktiválása: `profiles.status` → `active`
+  - Staff felfüggesztése: `profiles.status` → `suspended`
+- **Visszajelzés:** Toast értesítés a művelet eredményéről
+
+### 3.4 Repülőcsomag Kezelés
 
 #### FR-PKG-001: Csomag Létrehozása
 - **Jogosult:** Operator Admin

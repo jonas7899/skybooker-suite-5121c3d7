@@ -2,8 +2,8 @@
 
 ## Vári Gyula Sétarepülés Platform
 
-**Verzió:** 1.0  
-**Dátum:** 2024-12-17
+**Verzió:** 1.1  
+**Dátum:** 2024-12-19
 
 ---
 
@@ -605,6 +605,85 @@ serve(async (req) => {
   
   return new Response(JSON.stringify({ processed: reminders?.length || 0 }))
 })
+```
+
+---
+
+### 4.2 check-subscription-expiry
+
+**Útvonal:** `/functions/v1/check-subscription-expiry`  
+**Metódus:** POST  
+**Autentikáció:** Anon key (cron job által hívva)
+
+**Leírás:** Automatikusan ellenőrzi az operátorok előfizetésének lejáratát és email értesítéseket küld.
+
+**Trigger:** Napi cron job (8:00 UTC) - `check-subscription-expiry-daily`
+
+**Működés:**
+1. Lekéri az összes aktív/trial előfizetőt, akik lejárata 7 napon belüli
+2. Email értesítést küld a `billing_email` címre a következő intervallumokban:
+   - **7 nappal a lejárat előtt:** Emlékeztető a közelgő lejáratról
+   - **3 nappal a lejárat előtt:** Sürgős emlékeztető
+   - **1 nappal a lejárat előtt:** Utolsó emlékeztető
+   - **Lejáratkor:** Értesítés a lejárt előfizetésről
+3. Lejárt előfizetés esetén a státuszt `expired`-re állítja
+
+**Szükséges Secret:** `RESEND_API_KEY`
+
+```typescript
+// supabase/functions/check-subscription-expiry/index.ts
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+serve(async (req) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+
+  // Lekéri az operátorokat, akik lejárata 7 napon belüli
+  const { data: operators, error } = await supabase
+    .from('operators')
+    .select('*')
+    .in('subscription_status', ['active', 'trial'])
+    .not('subscription_expires_at', 'is', null)
+    .lte('subscription_expires_at', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString());
+
+  // Email küldés és státusz frissítés...
+  
+  return new Response(JSON.stringify({ processed: operators?.length || 0 }));
+});
+```
+
+---
+
+## 4.3 Adatbázis Bővítmények (Extensions)
+
+A platform a következő PostgreSQL bővítményeket használja:
+
+| Extension | Schema | Leírás |
+|-----------|--------|--------|
+| `pg_cron` | extensions | Ütemezett feladatok futtatása |
+| `pg_net` | extensions | HTTP kérések küldése az adatbázisból |
+
+**pg_cron Konfiguráció:**
+
+```sql
+-- Előfizetés lejárat ellenőrzés - naponta 8:00 UTC
+SELECT cron.schedule(
+  'check-subscription-expiry-daily',
+  '0 8 * * *',
+  $$
+  SELECT net.http_post(
+    url:='https://jeoegtzuubcrauhkuhlz.supabase.co/functions/v1/check-subscription-expiry',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer <anon_key>"}'::jsonb,
+    body:='{}'::jsonb
+  ) as request_id;
+  $$
+);
 ```
 
 ---

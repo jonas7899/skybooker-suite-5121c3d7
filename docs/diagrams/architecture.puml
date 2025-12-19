@@ -75,6 +75,12 @@ package "Supabase Backend" as BE {
   
   package "Edge Functions" {
     [process-reminders] as EdgeReminders
+    [check-subscription-expiry] as EdgeSubExpiry
+  }
+  
+  package "Scheduled Jobs" {
+    [pg_cron] as PgCron
+    [pg_net] as PgNet
   }
 }
 
@@ -126,6 +132,12 @@ Triggers --> PG
 ' Edge Functions
 EdgeReminders --> TblReminders
 EdgeReminders --> TblNotifications
+EdgeSubExpiry --> TblOperators
+EdgeSubExpiry ..> PgCron : triggered by
+
+' Scheduled Jobs
+PgCron --> PgNet : uses
+PgNet --> EdgeSubExpiry : HTTP POST
 
 ' Notes
 note right of RLS
@@ -142,6 +154,21 @@ note right of Triggers
   - create_booking_reminders
   - notify_waiting_list
   - notify_profile_status_change
+end note
+
+note right of PgCron
+  Scheduled Jobs:
+  - check-subscription-expiry-daily
+    (0 8 * * * - daily 8:00 UTC)
+end note
+
+note right of EdgeSubExpiry
+  Email Provider: Resend.com
+  Notification intervals:
+  - 7 days before expiry
+  - 3 days before expiry
+  - 1 day before expiry
+  - On expiry (status → expired)
 end note
 
 @enduml

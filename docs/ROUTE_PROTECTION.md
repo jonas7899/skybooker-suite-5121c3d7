@@ -1,5 +1,8 @@
 # Route Protection Documentation
 
+**Verzió:** 1.1  
+**Dátum:** 2024-12-19
+
 ## Overview
 
 This document describes the route protection system implemented in the Vári Gyula flight booking application. The system uses role-based access control (RBAC) to restrict access to different parts of the application.
@@ -41,11 +44,23 @@ Users must have an **active** status to access protected routes:
 | Route | Page | Description |
 |-------|------|-------------|
 | `/admin` | AdminDashboard | Platform overview and statistics |
-| `/admin/operators` | AdminOperators | Manage flight operators |
+| `/admin/operators` | AdminOperators | Manage flight operators, subscriptions, and staff |
 | `/admin/users` | AdminUsers | User management and approval |
 | `/admin/subscriptions` | AdminSubscriptions | Operator subscription management |
 | `/admin/analytics` | AdminAnalytics | Platform-wide analytics |
 | `/admin/settings` | AdminSettings | Platform configuration |
+
+### AdminOperators Page Features (v1.1)
+
+The `/admin/operators` page provides comprehensive operator management:
+
+| Feature | Description |
+|---------|-------------|
+| Operator List | View all operators with subscription info |
+| Staff Management | View and manage staff for each operator |
+| Staff Status Toggle | Activate/suspend individual staff members |
+| Subscription Modal | Configure subscription plan, status, expiry, price |
+| Quick Activate/Deactivate | One-click operator activation toggle |
 
 **Special Route:**
 - `/admin/login` - Not protected, allows Super Admin creation and login

@@ -2,8 +2,8 @@
 
 ## Vári Gyula Sétarepülés Platform
 
-**Verzió:** 1.0  
-**Dátum:** 2024-12-17
+**Verzió:** 1.1  
+**Dátum:** 2024-12-19
 
 ---
 
@@ -637,9 +637,37 @@ VITE_SUPABASE_PROJECT_ID=xxx
 
 Edge Functions automatikusan deployolódnak a `supabase/functions/` mappából.
 
+**Elérhető Edge Functions:**
+
+| Function | Leírás | Trigger |
+|----------|--------|---------|
+| `process-reminders` | Foglalási emlékeztetők feldolgozása | Manuális/Cron |
+| `check-subscription-expiry` | Előfizetés lejárat ellenőrzés és email | Napi cron (8:00 UTC) |
+| `send-notification-email` | Email értesítések küldése | Manuális |
+
 ---
 
-## 12. Hasznos Parancsok
+## 12. Új Fordítási Kulcsok (1.1 verzió)
+
+Az alábbi fordítási kulcsok kerültek hozzáadásra a `LanguageContext.tsx` fájlban:
+
+### Admin Operators Page
+
+| Kulcs | Magyar | Angol |
+|-------|--------|-------|
+| `admin.operators.staffActivated` | Staff sikeresen aktiválva | Staff activated successfully |
+| `admin.operators.staffDeactivated` | Staff sikeresen felfüggesztve | Staff deactivated successfully |
+| `admin.operators.manageSubscription` | Előfizetés kezelése | Manage Subscription |
+| `admin.operators.subscriptionPlan` | Csomag | Plan |
+| `admin.operators.subscriptionStatus` | Előfizetés státusz | Subscription Status |
+| `admin.operators.subscriptionExpires` | Lejárat | Expires |
+| `admin.operators.monthlyPrice` | Havi díj | Monthly Price |
+| `admin.operators.quickActivate` | Gyors aktiválás | Quick Activate |
+| `admin.operators.quickDeactivate` | Gyors deaktiválás | Quick Deactivate |
+
+---
+
+## 13. Hasznos Parancsok
 
 ```bash
 # Fejlesztői szerver
