@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,7 +97,9 @@ const AdminOperators: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [isRemoveAdminDialogOpen, setIsRemoveAdminDialogOpen] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
+  const [selectedAdminToRemove, setSelectedAdminToRemove] = useState<OperatorStaff | null>(null);
   const [newOperatorName, setNewOperatorName] = useState('');
   const [newOperatorSlug, setNewOperatorSlug] = useState('');
   const [selectedAdminUserId, setSelectedAdminUserId] = useState('');
@@ -106,6 +108,7 @@ const AdminOperators: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [isRemovingAdmin, setIsRemovingAdmin] = useState(false);
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
@@ -402,6 +405,35 @@ const AdminOperators: React.FC = () => {
     }
   };
 
+  const openRemoveAdminDialog = (admin: OperatorStaff) => {
+    setSelectedAdminToRemove(admin);
+    setIsRemoveAdminDialogOpen(true);
+  };
+
+  const removeAdminFromOperator = async () => {
+    if (!selectedAdminToRemove) return;
+
+    setIsRemovingAdmin(true);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('id', selectedAdminToRemove.id);
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.adminRemoved'));
+      setIsRemoveAdminDialogOpen(false);
+      setSelectedAdminToRemove(null);
+      fetchOperators();
+    } catch (error) {
+      console.error('Error removing admin:', error);
+      toast.error(t('error.generic'));
+    } finally {
+      setIsRemovingAdmin(false);
+    }
+  };
+
   const filteredOperators = operators.filter(op => {
     const matchesSearch = 
       op.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -593,6 +625,14 @@ const AdminOperators: React.FC = () => {
                               {operator.profile?.status === 'active' 
                                 ? t('admin.operators.deactivate') 
                                 : t('admin.operators.activate')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => openRemoveAdminDialog(operator)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <UserMinus className="w-4 h-4 mr-2" />
+                              {t('admin.operators.removeAdmin')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -803,6 +843,24 @@ const AdminOperators: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Remove Admin Confirmation Dialog */}
+      <AlertDialog open={isRemoveAdminDialogOpen} onOpenChange={setIsRemoveAdminDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('admin.operators.removeAdminTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('admin.operators.removeAdminDescription')} ({selectedAdminToRemove?.profile?.full_name} - {selectedAdminToRemove?.operator?.name})
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={removeAdminFromOperator} disabled={isRemovingAdmin} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isRemovingAdmin ? t('common.loading') : t('admin.operators.removeAdmin')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
