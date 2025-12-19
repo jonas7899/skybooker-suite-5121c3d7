@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCog, Search, Plus, MoreVertical } from 'lucide-react';
+import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +34,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -61,23 +71,45 @@ interface OperatorStaff {
   } | null;
 }
 
+interface Operator {
+  id: string;
+  name: string;
+  slug: string;
+  subscription_status: string;
+  created_at: string;
+}
+
 const AdminOperators: React.FC = () => {
   const { t, language } = useLanguage();
   const [operators, setOperators] = useState<OperatorStaff[]>([]);
+  const [operatorsList, setOperatorsList] = useState<Operator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [newOperatorName, setNewOperatorName] = useState('');
   const [newOperatorSlug, setNewOperatorSlug] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
   const fetchOperators = async () => {
     setIsLoading(true);
     try {
+      // Fetch all operators
+      const { data: allOperators, error: operatorsError } = await supabase
+        .from('operators')
+        .select('id, name, slug, subscription_status, created_at')
+        .order('name');
+
+      if (operatorsError) throw operatorsError;
+      setOperatorsList(allOperators || []);
+
       // Fetch users with operator_admin or operator_staff roles
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -180,8 +212,82 @@ const AdminOperators: React.FC = () => {
 
   const handleNameChange = (value: string) => {
     setNewOperatorName(value);
-    // Auto-generate slug from name
-    setNewOperatorSlug(value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
+    // Auto-generate slug from name only for new operators
+    if (!isEditDialogOpen) {
+      setNewOperatorSlug(value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
+    }
+  };
+
+  const openEditDialog = (operator: Operator) => {
+    setSelectedOperator(operator);
+    setNewOperatorName(operator.name);
+    setNewOperatorSlug(operator.slug);
+    setIsEditDialogOpen(true);
+  };
+
+  const updateOperator = async () => {
+    if (!selectedOperator || !newOperatorName.trim() || !newOperatorSlug.trim()) {
+      toast.error(t('admin.operators.fillAllFields'));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const { error } = await supabase
+        .from('operators')
+        .update({
+          name: newOperatorName.trim(),
+          slug: newOperatorSlug.trim().toLowerCase().replace(/\s+/g, '-'),
+        })
+        .eq('id', selectedOperator.id);
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.updated'));
+      setIsEditDialogOpen(false);
+      setSelectedOperator(null);
+      setNewOperatorName('');
+      setNewOperatorSlug('');
+      fetchOperators();
+    } catch (error: any) {
+      console.error('Error updating operator:', error);
+      if (error.code === '23505') {
+        toast.error(t('admin.operators.slugExists'));
+      } else {
+        toast.error(t('error.generic'));
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const openDeleteDialog = (operator: Operator) => {
+    setSelectedOperator(operator);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const deleteOperator = async () => {
+    if (!selectedOperator) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('operators')
+        .delete()
+        .eq('id', selectedOperator.id);
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.deleted'));
+      setIsDeleteDialogOpen(false);
+      setSelectedOperator(null);
+      fetchOperators();
+    } catch (error) {
+      console.error('Error deleting operator:', error);
+      toast.error(t('error.generic'));
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const filteredOperators = operators.filter(op => {
@@ -387,6 +493,58 @@ const AdminOperators: React.FC = () => {
           )}
         </CardContent>
       </Card>
+      {/* Operators List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('admin.operators.operatorsList')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {operatorsList.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">{t('admin.operators.noOperators')}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('admin.operators.operatorName')}</TableHead>
+                    <TableHead>{t('admin.operators.operatorSlug')}</TableHead>
+                    <TableHead>{t('admin.operators.status')}</TableHead>
+                    <TableHead>{t('admin.operators.createdAt')}</TableHead>
+                    <TableHead className="text-right">{t('admin.operators.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {operatorsList.map((op) => (
+                    <TableRow key={op.id}>
+                      <TableCell className="font-medium">{op.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{op.slug}</TableCell>
+                      <TableCell>
+                        <Badge variant={op.subscription_status === 'active' ? 'default' : 'secondary'}>
+                          {op.subscription_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(op.created_at), 'PP', { locale: dateLocale })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(op)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(op)}>
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Create Operator Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
@@ -425,6 +583,61 @@ const AdminOperators: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Operator Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin.operators.editTitle')}</DialogTitle>
+            <DialogDescription>{t('admin.operators.editDescription')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editOperatorName">{t('admin.operators.operatorName')}</Label>
+              <Input
+                id="editOperatorName"
+                value={newOperatorName}
+                onChange={(e) => setNewOperatorName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editOperatorSlug">{t('admin.operators.operatorSlug')}</Label>
+              <Input
+                id="editOperatorSlug"
+                value={newOperatorSlug}
+                onChange={(e) => setNewOperatorSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))}
+              />
+              <p className="text-xs text-muted-foreground">{t('admin.operators.slugHint')}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={updateOperator} disabled={isCreating}>
+              {isCreating ? t('common.loading') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('admin.operators.deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('admin.operators.deleteDescription')} ({selectedOperator?.name})
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteOperator} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isDeleting ? t('common.loading') : t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
