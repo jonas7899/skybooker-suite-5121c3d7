@@ -338,17 +338,14 @@ const PublicLayout: React.FC = () => {
                     <Button type="submit" size="sm" className="w-full">
                       {t('auth.login')}
                     </Button>
+                    <Button variant="outline" size="sm" className="w-full" asChild>
+                      <Link to="/regisztracio">{t('auth.register')}</Link>
+                    </Button>
                   </form>
-                  <div className="mt-4 space-y-1 text-xs">
-                    <a href="#" className="text-primary hover:underline block">
+                  <div className="mt-4 text-xs text-center">
+                    <a href="#" className="text-primary hover:underline">
                       {t('auth.forgotPassword')}
                     </a>
-                    <p className="text-muted-foreground">
-                      {t('auth.noAccount')}{' '}
-                      <Link to="/regisztracio" className="text-primary hover:underline">
-                        {t('auth.register')}
-                      </Link>
-                    </p>
                   </div>
                 </div>
               </div>
