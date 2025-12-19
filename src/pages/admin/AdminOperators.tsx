@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,6 +79,12 @@ interface Operator {
   created_at: string;
 }
 
+interface AvailableUser {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
 const AdminOperators: React.FC = () => {
   const { t, language } = useLanguage();
   const [operators, setOperators] = useState<OperatorStaff[]>([]);
@@ -90,11 +96,16 @@ const AdminOperators: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [newOperatorName, setNewOperatorName] = useState('');
   const [newOperatorSlug, setNewOperatorSlug] = useState('');
+  const [selectedAdminUserId, setSelectedAdminUserId] = useState('');
+  const [availableUsers, setAvailableUsers] = useState<AvailableUser[]>([]);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
@@ -184,12 +195,14 @@ const AdminOperators: React.FC = () => {
 
     setIsCreating(true);
     try {
-      const { error } = await supabase
+      const { data: newOp, error } = await supabase
         .from('operators')
         .insert({
           name: newOperatorName.trim(),
           slug: newOperatorSlug.trim().toLowerCase().replace(/\s+/g, '-'),
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -197,6 +210,14 @@ const AdminOperators: React.FC = () => {
       setIsDialogOpen(false);
       setNewOperatorName('');
       setNewOperatorSlug('');
+      
+      // Open assign admin dialog for the new operator
+      if (newOp) {
+        setSelectedOperator(newOp);
+        setIsAssignDialogOpen(true);
+        fetchAvailableUsers();
+      }
+      
       fetchOperators();
     } catch (error: any) {
       console.error('Error creating operator:', error);
@@ -209,6 +230,97 @@ const AdminOperators: React.FC = () => {
       setIsCreating(false);
     }
   };
+
+  const fetchAvailableUsers = async () => {
+    try {
+      // Get users who are already operator_admins
+      const { data: existingAdmins } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'operator_admin');
+
+      const existingAdminIds = existingAdmins?.map(a => a.user_id) || [];
+
+      // Get all profiles with 'user' role who are not already operator admins
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'user');
+
+      const userIds = userRoles?.map(u => u.user_id).filter(id => !existingAdminIds.includes(id)) || [];
+
+      if (userIds.length === 0) {
+        setAvailableUsers([]);
+        return;
+      }
+
+      // Get profiles for these users
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      const users: AvailableUser[] = (profiles || []).map(p => ({
+        id: p.id,
+        full_name: p.full_name,
+        email: '', // We don't have email from profiles
+      }));
+
+      setAvailableUsers(users);
+    } catch (error) {
+      console.error('Error fetching available users:', error);
+    }
+  };
+
+  const assignAdminToOperator = async () => {
+    if (!selectedOperator || !selectedAdminUserId) {
+      toast.error(t('admin.operators.selectUser'));
+      return;
+    }
+
+    setIsAssigning(true);
+    try {
+      // Insert new operator_admin role
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: selectedAdminUserId,
+          role: 'operator_admin',
+          operator_id: selectedOperator.id,
+          approved_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.adminAssigned'));
+      setIsAssignDialogOpen(false);
+      setSelectedOperator(null);
+      setSelectedAdminUserId('');
+      setUserSearchTerm('');
+      fetchOperators();
+    } catch (error: any) {
+      console.error('Error assigning admin:', error);
+      if (error.code === '23505') {
+        toast.error(t('admin.operators.adminAlreadyAssigned'));
+      } else {
+        toast.error(t('error.generic'));
+      }
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const openAssignDialog = (operator: Operator) => {
+    setSelectedOperator(operator);
+    setSelectedAdminUserId('');
+    setUserSearchTerm('');
+    fetchAvailableUsers();
+    setIsAssignDialogOpen(true);
+  };
+
+  const filteredAvailableUsers = availableUsers.filter(user =>
+    user.full_name.toLowerCase().includes(userSearchTerm.toLowerCase())
+  );
 
   const handleNameChange = (value: string) => {
     setNewOperatorName(value);
@@ -528,6 +640,9 @@ const AdminOperators: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openAssignDialog(op)} title={t('admin.operators.assignAdmin')}>
+                            <UserPlus className="w-4 h-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEditDialog(op)}>
                             <Pencil className="w-4 h-4" />
                           </Button>
@@ -638,6 +753,56 @@ const AdminOperators: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Admin Dialog */}
+      <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin.operators.assignAdminTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('admin.operators.assignAdminDescription')} {selectedOperator?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{t('admin.operators.selectUser')}</Label>
+              <Input
+                placeholder={t('admin.operators.searchUser')}
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+                className="mb-2"
+              />
+              <div className="max-h-48 overflow-y-auto border rounded-md">
+                {filteredAvailableUsers.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4 text-sm">
+                    {t('admin.operators.noUsersAvailable')}
+                  </p>
+                ) : (
+                  filteredAvailableUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className={`p-3 cursor-pointer hover:bg-accent border-b last:border-b-0 transition-colors ${
+                        selectedAdminUserId === user.id ? 'bg-accent' : ''
+                      }`}
+                      onClick={() => setSelectedAdminUserId(user.id)}
+                    >
+                      <p className="font-medium">{user.full_name}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={assignAdminToOperator} disabled={isAssigning || !selectedAdminUserId}>
+              {isAssigning ? t('common.loading') : t('admin.operators.assign')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
