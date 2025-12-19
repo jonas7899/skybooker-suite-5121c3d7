@@ -153,8 +153,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending email to ${userEmail}: ${emailContent.subject}`);
 
+    // Use custom domain once verified in Resend, otherwise fallback to sandbox
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Vári Gyula Sétarepülés <onboarding@resend.dev>";
+    
     const emailResponse = await resend.emails.send({
-      from: "Vári Gyula Sétarepülés <onboarding@resend.dev>",
+      from: fromEmail,
       to: [userEmail],
       subject: emailContent.subject,
       html: emailContent.html,
