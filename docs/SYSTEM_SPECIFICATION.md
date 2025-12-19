@@ -2,8 +2,8 @@
 
 ## Vári Gyula Sétarepülés Platform
 
-**Verzió:** 1.0  
-**Dátum:** 2024-12-17
+**Verzió:** 1.1  
+**Dátum:** 2024-12-19
 
 ---
 
@@ -331,6 +331,30 @@ SECURITY DEFINER
 //   2. Értesítéseket hoz létre
 //   3. Megjelöli elküldöttként
 ```
+
+#### check-subscription-expiry
+```typescript
+// Cél: Előfizetés lejárat ellenőrzése és email értesítés
+// Trigger: Napi cron job (8:00 UTC) - pg_cron
+// Email: Resend.com integráció
+// Művelet:
+//   1. Lekéri az operátorokat, akik lejárata 7 napon belüli
+//   2. Email értesítést küld a billing_email címre (7, 3, 1 nap, lejáratkor)
+//   3. Lejárt előfizetés esetén státusz → expired
+```
+
+### 3.4 Adatbázis Bővítmények
+
+| Extension | Schema | Leírás |
+|-----------|--------|--------|
+| `pg_cron` | extensions | Ütemezett SQL feladatok futtatása |
+| `pg_net` | extensions | HTTP kérések küldése az adatbázisból |
+
+**Cron Job-ok:**
+
+| Név | Ütemezés | Leírás |
+|-----|----------|--------|
+| `check-subscription-expiry-daily` | `0 8 * * *` | Előfizetés lejárat ellenőrzés |
 
 ---
 

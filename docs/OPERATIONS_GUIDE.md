@@ -2,8 +2,8 @@
 
 ## Vári Gyula Sétarepülés Platform
 
-**Verzió:** 1.0  
-**Dátum:** 2024-12-17
+**Verzió:** 1.1  
+**Dátum:** 2024-12-19
 
 ---
 
@@ -30,6 +30,13 @@
 │  │                 │  │  ┌─────────────────────────┐   │   │
 │  │                 │  │  │ Edge Functions          │   │   │
 │  │                 │  │  │ - process-reminders     │   │   │
+│  │                 │  │  │ - check-subscription-   │   │   │
+│  │                 │  │  │   expiry                │   │   │
+│  │                 │  │  └─────────────────────────┘   │   │
+│  │                 │  │  ┌─────────────────────────┐   │   │
+│  │                 │  │  │ Cron Jobs (pg_cron)     │   │   │
+│  │                 │  │  │ - subscription-expiry   │   │   │
+│  │                 │  │  │   (daily 8:00 UTC)      │   │   │
 │  │                 │  │  └─────────────────────────┘   │   │
 │  └─────────────────┘  └─────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -94,6 +101,37 @@ Lovable verziókezelést használ - korábbi verzióra visszaállítás:
 | SUPABASE_ANON_KEY | Anon kulcs | Deno.env.get() |
 | SUPABASE_SERVICE_ROLE_KEY | Admin kulcs | Deno.env.get() |
 | SUPABASE_DB_URL | Közvetlen DB URL | Deno.env.get() |
+| RESEND_API_KEY | Resend email API kulcs | Deno.env.get() |
+
+---
+
+## 3.3 Automatikus Ütemezett Feladatok
+
+### check-subscription-expiry-daily
+
+**Leírás:** Előfizetés lejárat ellenőrzés és email értesítés küldése.
+
+| Tulajdonság | Érték |
+|-------------|-------|
+| Cron Job Név | `check-subscription-expiry-daily` |
+| Ütemezés | `0 8 * * *` (naponta 8:00 UTC) |
+| Edge Function | `check-subscription-expiry` |
+| Email Provider | Resend.com |
+
+**Értesítési intervallumok:**
+- 7 nappal a lejárat előtt
+- 3 nappal a lejárat előtt  
+- 1 nappal a lejárat előtt
+- Lejáratkor (státusz → expired)
+
+**Monitoring:**
+```sql
+-- Cron job futás ellenőrzése
+SELECT * FROM cron.job_run_details 
+WHERE jobid = (SELECT jobid FROM cron.job WHERE jobname = 'check-subscription-expiry-daily')
+ORDER BY start_time DESC 
+LIMIT 10;
+```
 
 ---
 

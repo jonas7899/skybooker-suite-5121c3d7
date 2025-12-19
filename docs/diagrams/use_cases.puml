@@ -76,8 +76,11 @@ rectangle "Vári Gyula Sétarepülés Platform" {
     usecase "Előfizető kezelése" as UC_ManageSubscriber
     usecase "Előfizetés meghosszabbítás" as UC_ExtendSubscription
     usecase "Előfizetés felfüggesztése" as UC_SuspendSubscription
+    usecase "Előfizetés csomag beállítása" as UC_SetSubscriptionPlan
     usecase "Operátor létrehozása" as UC_CreateOperator
     usecase "Operátor kezelése" as UC_ManageOperators
+    usecase "Operátor gyors aktiválás/\ndeaktiválás" as UC_QuickToggleOperator
+    usecase "Staff aktiválása/\ninaktiválása" as UC_ToggleStaffStatus
     usecase "Összes felhasználó" as UC_AllUsers
     usecase "Platform statisztikák" as UC_PlatformStats
     usecase "Felhasználó felfüggesztése" as UC_SuspendUser
@@ -153,8 +156,11 @@ SA --> UC_CreateSubscriber
 SA --> UC_ManageSubscriber
 SA --> UC_ExtendSubscription
 SA --> UC_SuspendSubscription
+SA --> UC_SetSubscriptionPlan
 SA --> UC_CreateOperator
 SA --> UC_ManageOperators
+SA --> UC_QuickToggleOperator
+SA --> UC_ToggleStaffStatus
 SA --> UC_AllUsers
 SA --> UC_PlatformStats
 SA --> UC_SuspendUser
@@ -190,7 +196,12 @@ end note
 note bottom of SAF
   Super Admin műveletek
   csak /admin/* útvonalon
-  érhetők el
+  érhetők el.
+  
+  v1.1 új funkciók:
+  - Előfizetés csomag beállítása
+  - Staff aktiválása/inaktiválása
+  - Operátor gyors aktiválás/deaktiválás
 end note
 
 @enduml
