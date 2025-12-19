@@ -31,6 +31,8 @@ import OperatorCalendar from "./pages/operator/OperatorCalendar";
 import OperatorBookings from "./pages/operator/OperatorBookings";
 import OperatorPricing from "./pages/operator/OperatorPricing";
 import OperatorBilling from "./pages/operator/OperatorBilling";
+import OperatorSupportTiers from "./pages/operator/OperatorSupportTiers";
+import OperatorBankSettings from "./pages/operator/OperatorBankSettings";
 import AvailabilityCalendar from "./pages/public/AvailabilityCalendar";
 import BookingCheckout from "./pages/booking/BookingCheckout";
 
@@ -60,6 +62,7 @@ const App = () => (
                 <Route path="/hirek" element={<Hirek />} />
                 <Route path="/rolam" element={<Rolam />} />
                 <Route path="/kapcsolat" element={<Kapcsolat />} />
+                {/* Protected public pages - require active user */}
                 <Route path="/arckepcsarnok" element={<Arckepcsarnok />} />
                 <Route path="/forum" element={<Forum />} />
                 <Route path="/idopontok" element={<AvailabilityCalendar />} />
@@ -107,6 +110,8 @@ const App = () => (
                   <Route path="pricing" element={<OperatorPricing />} />
                   <Route path="billing" element={<OperatorBilling />} />
                   <Route path="analytics" element={<OperatorAnalytics />} />
+                  <Route path="support-tiers" element={<OperatorSupportTiers />} />
+                  <Route path="bank-settings" element={<OperatorBankSettings />} />
                 </Route>
               </Route>
 
