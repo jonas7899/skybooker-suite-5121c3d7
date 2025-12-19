@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus, Users, Calendar } from 'lucide-react';
+import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus, Users, Calendar, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -585,6 +585,36 @@ const AdminOperators: React.FC = () => {
     setSubscriptionExpiresAt(format(newExpiry, 'yyyy-MM-dd'));
   };
 
+  const toggleOperatorSubscriptionStatus = async (operator: Operator) => {
+    const newStatus = operator.subscription_status === 'active' ? 'expired' : 'active';
+    try {
+      const updateData: Record<string, string | null> = {
+        subscription_status: newStatus,
+      };
+      
+      // If activating, set expiry to 1 month from now if not set
+      if (newStatus === 'active' && !operator.subscription_expires_at) {
+        updateData.subscription_expires_at = addMonths(new Date(), 1).toISOString();
+        updateData.subscription_started_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('operators')
+        .update(updateData)
+        .eq('id', operator.id);
+
+      if (error) throw error;
+      
+      toast.success(newStatus === 'active' 
+        ? t('admin.operators.operatorActivated') 
+        : t('admin.operators.operatorDeactivated'));
+      fetchOperators();
+    } catch (error) {
+      console.error('Error updating operator status:', error);
+      toast.error(t('error.generic'));
+    }
+  };
+
   const handleNameChange = (value: string) => {
     setNewOperatorName(value);
     // Auto-generate slug from name only for new operators
@@ -955,6 +985,14 @@ const AdminOperators: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => toggleOperatorSubscriptionStatus(op)} 
+                            title={op.subscription_status === 'active' ? t('admin.operators.deactivateOperator') : t('admin.operators.activateOperator')}
+                          >
+                            <Power className={`w-4 h-4 ${op.subscription_status === 'active' ? 'text-green-500' : 'text-muted-foreground'}`} />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openSubscriptionDialog(op)} title={t('admin.operators.manageSubscription')}>
                             <Calendar className="w-4 h-4" />
                           </Button>
