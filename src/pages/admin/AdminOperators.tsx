@@ -26,6 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,6 +68,10 @@ const AdminOperators: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newOperatorName, setNewOperatorName] = useState('');
+  const [newOperatorSlug, setNewOperatorSlug] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
@@ -131,6 +144,46 @@ const AdminOperators: React.FC = () => {
     }
   };
 
+  const createOperator = async () => {
+    if (!newOperatorName.trim() || !newOperatorSlug.trim()) {
+      toast.error(t('admin.operators.fillAllFields'));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const { error } = await supabase
+        .from('operators')
+        .insert({
+          name: newOperatorName.trim(),
+          slug: newOperatorSlug.trim().toLowerCase().replace(/\s+/g, '-'),
+        });
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.created'));
+      setIsDialogOpen(false);
+      setNewOperatorName('');
+      setNewOperatorSlug('');
+      fetchOperators();
+    } catch (error: any) {
+      console.error('Error creating operator:', error);
+      if (error.code === '23505') {
+        toast.error(t('admin.operators.slugExists'));
+      } else {
+        toast.error(t('error.generic'));
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleNameChange = (value: string) => {
+    setNewOperatorName(value);
+    // Auto-generate slug from name
+    setNewOperatorSlug(value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
+  };
+
   const filteredOperators = operators.filter(op => {
     const matchesSearch = 
       op.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -183,7 +236,7 @@ const AdminOperators: React.FC = () => {
             {t('admin.operators.subtitle')}
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           {t('admin.operators.new')}
         </Button>
@@ -334,6 +387,44 @@ const AdminOperators: React.FC = () => {
           )}
         </CardContent>
       </Card>
+      {/* Create Operator Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin.operators.newTitle')}</DialogTitle>
+            <DialogDescription>{t('admin.operators.newDescription')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="operatorName">{t('admin.operators.operatorName')}</Label>
+              <Input
+                id="operatorName"
+                value={newOperatorName}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder={t('admin.operators.operatorNamePlaceholder')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="operatorSlug">{t('admin.operators.operatorSlug')}</Label>
+              <Input
+                id="operatorSlug"
+                value={newOperatorSlug}
+                onChange={(e) => setNewOperatorSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))}
+                placeholder={t('admin.operators.operatorSlugPlaceholder')}
+              />
+              <p className="text-xs text-muted-foreground">{t('admin.operators.slugHint')}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={createOperator} disabled={isCreating}>
+              {isCreating ? t('common.loading') : t('admin.operators.create')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

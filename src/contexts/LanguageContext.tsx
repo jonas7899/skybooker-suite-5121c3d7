@@ -230,6 +230,18 @@ export const translations: Translations = {
   'admin.operators.deactivate': { hu: 'Inaktiválás', en: 'Deactivate' },
   'admin.operators.activated': { hu: 'Operátor aktiválva', en: 'Operator activated' },
   'admin.operators.deactivated': { hu: 'Operátor inaktiválva', en: 'Operator deactivated' },
+  'admin.operators.newTitle': { hu: 'Új operátor létrehozása', en: 'Create New Operator' },
+  'admin.operators.newDescription': { hu: 'Add meg az új operátor adatait', en: 'Enter the new operator details' },
+  'admin.operators.operatorName': { hu: 'Operátor neve', en: 'Operator Name' },
+  'admin.operators.operatorNamePlaceholder': { hu: 'pl. MiG-29 Hungary', en: 'e.g. MiG-29 Hungary' },
+  'admin.operators.operatorSlug': { hu: 'URL azonosító (slug)', en: 'URL identifier (slug)' },
+  'admin.operators.operatorSlugPlaceholder': { hu: 'pl. mig-29-hungary', en: 'e.g. mig-29-hungary' },
+  'admin.operators.slugHint': { hu: 'Egyedi azonosító az URL-ben. Csak kisbetűk, számok és kötőjel.', en: 'Unique identifier for URLs. Only lowercase letters, numbers and hyphens.' },
+  'admin.operators.create': { hu: 'Létrehozás', en: 'Create' },
+  'admin.operators.created': { hu: 'Operátor sikeresen létrehozva', en: 'Operator created successfully' },
+  'admin.operators.fillAllFields': { hu: 'Kérlek töltsd ki az összes mezőt', en: 'Please fill in all fields' },
+  'admin.operators.slugExists': { hu: 'Ez a slug már foglalt', en: 'This slug is already taken' },
+  'common.loading': { hu: 'Betöltés...', en: 'Loading...' },
 
   // Admin Users
   'admin.users.title': { hu: 'Felhasználók', en: 'Users' },
