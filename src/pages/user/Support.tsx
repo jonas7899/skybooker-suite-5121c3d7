@@ -1,75 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useSupportTier } from '@/hooks/useSupportTier';
+import { useOperatorSettings } from '@/hooks/useOperatorSettings';
 import { ArrowLeft, Medal, Copy, Check, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface SupportTier {
-  id: string;
-  name: string;
-  min_amount_eur: number;
-  max_amount_eur: number | null;
-  color: string;
-  icon: string;
-  sort_order: number;
-}
-
-interface OperatorSettings {
-  bank_account_number: string | null;
-  bank_account_name: string | null;
-  bank_name: string | null;
-  support_description: string | null;
-}
+// Hardcoded operator ID for now - in production this would come from config or route
+const DEFAULT_OPERATOR_ID = '';
 
 const Support: React.FC = () => {
-  const { user } = useAuth();
   const { language } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [tiers, setTiers] = useState<SupportTier[]>([]);
-  const [settings, setSettings] = useState<OperatorSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { supportTiers, isLoading: tiersLoading } = useSupportTier(DEFAULT_OPERATOR_ID || undefined);
+  const { settings, isLoading: settingsLoading } = useOperatorSettings(DEFAULT_OPERATOR_ID || undefined);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch support tiers
-        const { data: tiersData } = await supabase
-          .from('support_tiers')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
-
-        if (tiersData) {
-          setTiers(tiersData);
-        }
-
-        // Fetch operator settings (first one)
-        const { data: settingsData } = await supabase
-          .from('operator_settings')
-          .select('*')
-          .limit(1)
-          .single();
-
-        if (settingsData) {
-          setSettings(settingsData);
-        }
-      } catch (error) {
-        console.error('Error fetching support data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const loading = tiersLoading || settingsLoading;
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -150,7 +102,7 @@ const Support: React.FC = () => {
               <p className="text-muted-foreground">
                 {language === 'hu' ? 'Betöltés...' : 'Loading...'}
               </p>
-            ) : tiers.length === 0 ? (
+            ) : supportTiers.length === 0 ? (
               <p className="text-muted-foreground">
                 {language === 'hu' 
                   ? 'Jelenleg nincsenek beállított támogatói fokozatok. Kérjük, érdeklődjön az operátornál.' 
@@ -158,7 +110,7 @@ const Support: React.FC = () => {
               </p>
             ) : (
               <div className="space-y-3">
-                {tiers.map((tier) => (
+                {supportTiers.map((tier) => (
                   <div 
                     key={tier.id} 
                     className="flex items-center justify-between p-4 rounded-lg border"
