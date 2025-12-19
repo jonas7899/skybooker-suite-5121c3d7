@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Menu, X, ChevronRight, Phone, Mail, Lock, User, KeyRound, Heart, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronRight, Phone, Mail, Lock, User, KeyRound, Heart, LogOut, ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupportTier } from '@/hooks/useSupportTier';
 import SupportTierBadge from '@/components/subscription/SupportTierBadge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +20,13 @@ import {
 
 const PublicLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const { isAuthenticated, signOut, profile } = useAuth();
+  const { isAuthenticated, signOut, signIn, profile } = useAuth();
   const { currentTier } = useSupportTier();
   const windfinderRef = useRef<HTMLDivElement>(null);
 
@@ -318,34 +322,68 @@ const PublicLayout: React.FC = () => {
                   <h3 className="font-display font-semibold text-foreground">{t('auth.login')}</h3>
                 </div>
                 <div className="p-4">
-                  <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); }}>
+                  <form className="space-y-3" onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!loginEmail.trim() || !loginPassword.trim()) {
+                      toast.error(language === 'hu' ? 'Kérlek, töltsd ki az összes mezőt!' : 'Please fill in all fields!');
+                      return;
+                    }
+                    setLoginLoading(true);
+                    try {
+                      const { error } = await signIn(loginEmail, loginPassword);
+                      if (error) {
+                        if (error.message.includes('Invalid login credentials')) {
+                          toast.error(language === 'hu' ? 'Hibás email vagy jelszó!' : 'Invalid email or password!');
+                        } else if (error.message.includes('Email not confirmed')) {
+                          toast.error(language === 'hu' ? 'Az email cím még nincs megerősítve!' : 'Email not confirmed!');
+                        } else {
+                          toast.error(error.message);
+                        }
+                      } else {
+                        toast.success(language === 'hu' ? 'Sikeres bejelentkezés!' : 'Login successful!');
+                        setLoginEmail('');
+                        setLoginPassword('');
+                      }
+                    } catch (err) {
+                      toast.error(language === 'hu' ? 'Hiba történt a bejelentkezés során' : 'Login error occurred');
+                    } finally {
+                      setLoginLoading(false);
+                    }
+                  }}>
                     <Input 
-                      type="text" 
-                      placeholder={t('auth.username')} 
+                      type="email" 
+                      placeholder={t('auth.email')}
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
                       className="text-sm"
+                      disabled={loginLoading}
                     />
                     <Input 
                       type="password" 
-                      placeholder={t('auth.password')} 
+                      placeholder={t('auth.password')}
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
                       className="text-sm"
+                      disabled={loginLoading}
                     />
-                    <div className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" id="remember" className="rounded" />
-                      <label htmlFor="remember" className="text-muted-foreground">
-                        {t('auth.rememberMe')}
-                      </label>
-                    </div>
-                    <Button type="submit" size="sm" className="w-full">
-                      {t('auth.login')}
+                    <Button type="submit" size="sm" className="w-full" disabled={loginLoading}>
+                      {loginLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {language === 'hu' ? 'Bejelentkezés...' : 'Logging in...'}
+                        </>
+                      ) : (
+                        t('auth.login')
+                      )}
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Button variant="outline" size="sm" className="w-full" asChild disabled={loginLoading}>
                       <Link to="/regisztracio">{t('auth.register')}</Link>
                     </Button>
                   </form>
                   <div className="mt-4 text-xs text-center">
-                    <a href="#" className="text-primary hover:underline">
+                    <Link to="/elfelejtett-jelszo" className="text-primary hover:underline">
                       {t('auth.forgotPassword')}
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
