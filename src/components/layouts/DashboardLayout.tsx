@@ -24,6 +24,7 @@ import {
   CreditCard,
   User,
   HeartHandshake,
+  Newspaper,
 } from 'lucide-react';
 
 interface NavItem {
@@ -59,6 +60,7 @@ const DashboardLayout: React.FC = () => {
           { href: '/operator/calendar', label: t('dashboard.nav.calendar'), icon: <Calendar className="w-5 h-5" /> },
           { href: '/operator/packages', label: t('dashboard.nav.packages'), icon: <Plane className="w-5 h-5" /> },
           { href: '/operator/bookings', label: t('dashboard.nav.bookings'), icon: <Ticket className="w-5 h-5" /> },
+          { href: '/operator/news', label: t('dashboard.nav.news'), icon: <Newspaper className="w-5 h-5" /> },
           { href: '/operator/supporters', label: t('dashboard.nav.supporters'), icon: <Heart className="w-5 h-5" /> },
           { href: '/operator/support-tiers', label: t('dashboard.nav.supportTiers'), icon: <Medal className="w-5 h-5" /> },
           { href: '/operator/bank-settings', label: t('dashboard.nav.bankSettings'), icon: <CreditCard className="w-5 h-5" /> },
@@ -71,6 +73,7 @@ const DashboardLayout: React.FC = () => {
           { href: '/operator', label: t('dashboard.nav.dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
           { href: '/operator/flights', label: t('dashboard.nav.flights'), icon: <Plane className="w-5 h-5" /> },
           { href: '/operator/bookings', label: t('dashboard.nav.bookings'), icon: <Calendar className="w-5 h-5" /> },
+          { href: '/operator/news', label: t('dashboard.nav.news'), icon: <Newspaper className="w-5 h-5" /> },
           { href: '/operator/analytics', label: t('dashboard.nav.analytics'), icon: <BarChart3 className="w-5 h-5" /> },
         ];
       case 'user':

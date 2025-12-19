@@ -39,6 +39,7 @@ export const translations: Translations = {
   'dashboard.nav.profile': { hu: 'Profilom', en: 'My Profile' },
   'dashboard.nav.support': { hu: 'Támogatás', en: 'Support' },
   'dashboard.nav.signOut': { hu: 'Kijelentkezés', en: 'Sign Out' },
+  'dashboard.nav.news': { hu: 'Hírek', en: 'News' },
   
   // Role badges
   'role.superAdmin': { hu: 'Szuper Admin', en: 'Super Admin' },
