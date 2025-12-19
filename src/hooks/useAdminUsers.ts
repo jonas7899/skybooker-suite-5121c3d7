@@ -80,6 +80,32 @@ export const useAdminUsers = () => {
 
       if (roleError) throw roleError;
 
+      // Create notification for the user
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          title: 'Fiókod aktiválva',
+          message: 'Gratulálunk! A regisztrációd jóváhagyásra került. Most már beléphetsz és foglalhatsz időpontot, ha támogatod az egyesületet.',
+          type: 'account_approved',
+        });
+
+      if (notificationError) {
+        console.error('Error creating notification:', notificationError);
+      }
+
+      // Send email notification via edge function
+      try {
+        await supabase.functions.invoke('send-notification-email', {
+          body: {
+            type: 'account_activated',
+            userId: userId,
+          },
+        });
+      } catch (emailError) {
+        console.error('Error sending email notification:', emailError);
+      }
+
       toast({
         title: 'Felhasználó jóváhagyva',
         description: 'A felhasználó sikeresen aktiválva lett',
