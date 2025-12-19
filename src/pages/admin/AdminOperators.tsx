@@ -499,6 +499,29 @@ const AdminOperators: React.FC = () => {
     }
   };
 
+  const toggleStaffStatus = async (staff: OperatorStaff) => {
+    if (!staff.profile || !selectedOperator) return;
+    
+    const newStatus = staff.profile.status === 'active' ? 'suspended' : 'active';
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: newStatus })
+        .eq('id', staff.user_id);
+
+      if (error) throw error;
+      
+      toast.success(newStatus === 'active' 
+        ? t('admin.operators.staffActivated') 
+        : t('admin.operators.staffDeactivated'));
+      fetchOperatorStaff(selectedOperator.id);
+      fetchOperators();
+    } catch (error) {
+      console.error('Error updating staff status:', error);
+      toast.error(t('error.generic'));
+    }
+  };
+
   const handleNameChange = (value: string) => {
     setNewOperatorName(value);
     // Auto-generate slug from name only for new operators
@@ -1085,13 +1108,24 @@ const AdminOperators: React.FC = () => {
                           {format(new Date(staff.created_at), 'PP', { locale: dateLocale })}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => openRemoveStaffDialog(staff)}
-                          >
-                            <UserMinus className="w-4 h-4 text-destructive" />
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => toggleStaffStatus(staff)}
+                            >
+                              {staff.profile?.status === 'active' 
+                                ? t('admin.operators.deactivate') 
+                                : t('admin.operators.activate')}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => openRemoveStaffDialog(staff)}
+                            >
+                              <UserMinus className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
