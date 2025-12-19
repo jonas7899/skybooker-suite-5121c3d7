@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus } from 'lucide-react';
+import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,17 +98,27 @@ const AdminOperators: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [isRemoveAdminDialogOpen, setIsRemoveAdminDialogOpen] = useState(false);
+  const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
+  const [isAddStaffDialogOpen, setIsAddStaffDialogOpen] = useState(false);
+  const [isRemoveStaffDialogOpen, setIsRemoveStaffDialogOpen] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [selectedAdminToRemove, setSelectedAdminToRemove] = useState<OperatorStaff | null>(null);
+  const [selectedStaffToRemove, setSelectedStaffToRemove] = useState<OperatorStaff | null>(null);
+  const [operatorStaffList, setOperatorStaffList] = useState<OperatorStaff[]>([]);
   const [newOperatorName, setNewOperatorName] = useState('');
   const [newOperatorSlug, setNewOperatorSlug] = useState('');
   const [selectedAdminUserId, setSelectedAdminUserId] = useState('');
+  const [selectedStaffUserId, setSelectedStaffUserId] = useState('');
   const [availableUsers, setAvailableUsers] = useState<AvailableUser[]>([]);
+  const [availableStaffUsers, setAvailableStaffUsers] = useState<AvailableUser[]>([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [staffSearchTerm, setStaffSearchTerm] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const [isRemovingAdmin, setIsRemovingAdmin] = useState(false);
+  const [isAddingStaff, setIsAddingStaff] = useState(false);
+  const [isRemovingStaff, setIsRemovingStaff] = useState(false);
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
@@ -324,6 +334,170 @@ const AdminOperators: React.FC = () => {
   const filteredAvailableUsers = availableUsers.filter(user =>
     user.full_name.toLowerCase().includes(userSearchTerm.toLowerCase())
   );
+
+  const filteredAvailableStaffUsers = availableStaffUsers.filter(user =>
+    user.full_name.toLowerCase().includes(staffSearchTerm.toLowerCase())
+  );
+
+  // Staff management functions
+  const fetchOperatorStaff = async (operatorId: string) => {
+    try {
+      const { data: staffRoles, error } = await supabase
+        .from('user_roles')
+        .select('id, user_id, role, operator_id, created_at')
+        .eq('operator_id', operatorId)
+        .eq('role', 'operator_staff');
+
+      if (error) throw error;
+
+      const userIds = staffRoles?.map(r => r.user_id) || [];
+      
+      if (userIds.length === 0) {
+        setOperatorStaffList([]);
+        return;
+      }
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, phone, status')
+        .in('id', userIds);
+
+      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const enrichedStaff: OperatorStaff[] = (staffRoles || []).map(role => ({
+        ...role,
+        role: role.role as 'operator_admin' | 'operator_staff',
+        profile: profilesMap.get(role.user_id) || null,
+        operator: null,
+      }));
+
+      setOperatorStaffList(enrichedStaff);
+    } catch (error) {
+      console.error('Error fetching operator staff:', error);
+    }
+  };
+
+  const fetchAvailableStaffUsers = async (operatorId: string) => {
+    try {
+      // Get users who are already staff for this operator
+      const { data: existingStaff } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('operator_id', operatorId)
+        .in('role', ['operator_admin', 'operator_staff']);
+
+      const existingStaffIds = existingStaff?.map(s => s.user_id) || [];
+
+      // Get all profiles with 'user' role who are not already staff
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'user');
+
+      const userIds = userRoles?.map(u => u.user_id).filter(id => !existingStaffIds.includes(id)) || [];
+
+      if (userIds.length === 0) {
+        setAvailableStaffUsers([]);
+        return;
+      }
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      const users: AvailableUser[] = (profiles || []).map(p => ({
+        id: p.id,
+        full_name: p.full_name,
+        email: '',
+      }));
+
+      setAvailableStaffUsers(users);
+    } catch (error) {
+      console.error('Error fetching available staff users:', error);
+    }
+  };
+
+  const openStaffDialog = (operator: Operator) => {
+    setSelectedOperator(operator);
+    fetchOperatorStaff(operator.id);
+    setIsStaffDialogOpen(true);
+  };
+
+  const openAddStaffDialog = () => {
+    if (!selectedOperator) return;
+    setSelectedStaffUserId('');
+    setStaffSearchTerm('');
+    fetchAvailableStaffUsers(selectedOperator.id);
+    setIsAddStaffDialogOpen(true);
+  };
+
+  const addStaffToOperator = async () => {
+    if (!selectedOperator || !selectedStaffUserId) {
+      toast.error(t('admin.operators.selectUser'));
+      return;
+    }
+
+    setIsAddingStaff(true);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: selectedStaffUserId,
+          role: 'operator_staff',
+          operator_id: selectedOperator.id,
+          approved_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.staffAdded'));
+      setIsAddStaffDialogOpen(false);
+      setSelectedStaffUserId('');
+      setStaffSearchTerm('');
+      fetchOperatorStaff(selectedOperator.id);
+      fetchOperators();
+    } catch (error: any) {
+      console.error('Error adding staff:', error);
+      if (error.code === '23505') {
+        toast.error(t('admin.operators.staffAlreadyAssigned'));
+      } else {
+        toast.error(t('error.generic'));
+      }
+    } finally {
+      setIsAddingStaff(false);
+    }
+  };
+
+  const openRemoveStaffDialog = (staff: OperatorStaff) => {
+    setSelectedStaffToRemove(staff);
+    setIsRemoveStaffDialogOpen(true);
+  };
+
+  const removeStaffFromOperator = async () => {
+    if (!selectedStaffToRemove || !selectedOperator) return;
+
+    setIsRemovingStaff(true);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('id', selectedStaffToRemove.id);
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.staffRemoved'));
+      setIsRemoveStaffDialogOpen(false);
+      setSelectedStaffToRemove(null);
+      fetchOperatorStaff(selectedOperator.id);
+      fetchOperators();
+    } catch (error) {
+      console.error('Error removing staff:', error);
+      toast.error(t('error.generic'));
+    } finally {
+      setIsRemovingStaff(false);
+    }
+  };
 
   const handleNameChange = (value: string) => {
     setNewOperatorName(value);
@@ -680,6 +854,9 @@ const AdminOperators: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openStaffDialog(op)} title={t('admin.operators.manageStaff')}>
+                            <Users className="w-4 h-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openAssignDialog(op)} title={t('admin.operators.assignAdmin')}>
                             <UserPlus className="w-4 h-4" />
                           </Button>
@@ -857,6 +1034,143 @@ const AdminOperators: React.FC = () => {
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={removeAdminFromOperator} disabled={isRemovingAdmin} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isRemovingAdmin ? t('common.loading') : t('admin.operators.removeAdmin')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Staff Management Dialog */}
+      <Dialog open={isStaffDialogOpen} onOpenChange={setIsStaffDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('admin.operators.manageStaffTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('admin.operators.manageStaffDescription')} {selectedOperator?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex justify-between items-center">
+              <h4 className="font-medium">{t('admin.operators.staffMembers')}</h4>
+              <Button onClick={openAddStaffDialog} size="sm">
+                <UserPlus className="w-4 h-4 mr-2" />
+                {t('admin.operators.addStaff')}
+              </Button>
+            </div>
+            {operatorStaffList.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8 text-sm">
+                {t('admin.operators.noStaffMembers')}
+              </p>
+            ) : (
+              <div className="border rounded-md overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('admin.operators.name')}</TableHead>
+                      <TableHead>{t('admin.operators.status')}</TableHead>
+                      <TableHead>{t('admin.operators.createdAt')}</TableHead>
+                      <TableHead className="text-right">{t('admin.operators.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {operatorStaffList.map((staff) => (
+                      <TableRow key={staff.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{staff.profile?.full_name || '-'}</p>
+                            <p className="text-sm text-muted-foreground">{staff.profile?.phone || '-'}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(staff.profile?.status)}</TableCell>
+                        <TableCell>
+                          {format(new Date(staff.created_at), 'PP', { locale: dateLocale })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => openRemoveStaffDialog(staff)}
+                          >
+                            <UserMinus className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStaffDialogOpen(false)}>
+              {t('common.close')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Staff Dialog */}
+      <Dialog open={isAddStaffDialogOpen} onOpenChange={setIsAddStaffDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin.operators.addStaffTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('admin.operators.addStaffDescription')} {selectedOperator?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{t('admin.operators.selectUser')}</Label>
+              <Input
+                placeholder={t('admin.operators.searchUser')}
+                value={staffSearchTerm}
+                onChange={(e) => setStaffSearchTerm(e.target.value)}
+                className="mb-2"
+              />
+              <div className="max-h-48 overflow-y-auto border rounded-md">
+                {filteredAvailableStaffUsers.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4 text-sm">
+                    {t('admin.operators.noUsersAvailable')}
+                  </p>
+                ) : (
+                  filteredAvailableStaffUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className={`p-3 cursor-pointer hover:bg-accent border-b last:border-b-0 transition-colors ${
+                        selectedStaffUserId === user.id ? 'bg-accent' : ''
+                      }`}
+                      onClick={() => setSelectedStaffUserId(user.id)}
+                    >
+                      <p className="font-medium">{user.full_name}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddStaffDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={addStaffToOperator} disabled={isAddingStaff || !selectedStaffUserId}>
+              {isAddingStaff ? t('common.loading') : t('admin.operators.addStaff')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Staff Confirmation Dialog */}
+      <AlertDialog open={isRemoveStaffDialogOpen} onOpenChange={setIsRemoveStaffDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('admin.operators.removeStaffTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('admin.operators.removeStaffDescription')} ({selectedStaffToRemove?.profile?.full_name})
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={removeStaffFromOperator} disabled={isRemovingStaff} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isRemovingStaff ? t('common.loading') : t('admin.operators.removeStaff')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
