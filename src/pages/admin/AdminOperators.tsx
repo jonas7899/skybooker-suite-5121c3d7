@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus, Users } from 'lucide-react';
+import { UserCog, Search, Plus, MoreVertical, Pencil, Trash2, UserPlus, UserMinus, Users, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,7 +48,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format, addMonths } from 'date-fns';
 import { hu, enUS } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -76,6 +76,9 @@ interface Operator {
   name: string;
   slug: string;
   subscription_status: string;
+  subscription_plan: string | null;
+  subscription_expires_at: string | null;
+  subscription_price_huf: number | null;
   created_at: string;
 }
 
@@ -101,6 +104,7 @@ const AdminOperators: React.FC = () => {
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
   const [isAddStaffDialogOpen, setIsAddStaffDialogOpen] = useState(false);
   const [isRemoveStaffDialogOpen, setIsRemoveStaffDialogOpen] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [selectedAdminToRemove, setSelectedAdminToRemove] = useState<OperatorStaff | null>(null);
   const [selectedStaffToRemove, setSelectedStaffToRemove] = useState<OperatorStaff | null>(null);
@@ -119,6 +123,13 @@ const AdminOperators: React.FC = () => {
   const [isRemovingAdmin, setIsRemovingAdmin] = useState(false);
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const [isRemovingStaff, setIsRemovingStaff] = useState(false);
+  const [isUpdatingSubscription, setIsUpdatingSubscription] = useState(false);
+  
+  // Subscription form state
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('monthly');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>('trial');
+  const [subscriptionExpiresAt, setSubscriptionExpiresAt] = useState<string>('');
+  const [subscriptionPriceHuf, setSubscriptionPriceHuf] = useState<string>('9999');
 
   const dateLocale = language === 'hu' ? hu : enUS;
 
@@ -128,7 +139,7 @@ const AdminOperators: React.FC = () => {
       // Fetch all operators
       const { data: allOperators, error: operatorsError } = await supabase
         .from('operators')
-        .select('id, name, slug, subscription_status, created_at')
+        .select('id, name, slug, subscription_status, subscription_plan, subscription_expires_at, subscription_price_huf, created_at')
         .order('name');
 
       if (operatorsError) throw operatorsError;
@@ -522,6 +533,58 @@ const AdminOperators: React.FC = () => {
     }
   };
 
+  // Subscription management functions
+  const openSubscriptionDialog = (operator: Operator) => {
+    setSelectedOperator(operator);
+    setSubscriptionPlan(operator.subscription_plan || 'monthly');
+    setSubscriptionStatus(operator.subscription_status);
+    setSubscriptionExpiresAt(operator.subscription_expires_at ? format(new Date(operator.subscription_expires_at), 'yyyy-MM-dd') : '');
+    setSubscriptionPriceHuf(operator.subscription_price_huf?.toString() || '9999');
+    setIsSubscriptionDialogOpen(true);
+  };
+
+  const updateSubscription = async () => {
+    if (!selectedOperator) return;
+
+    setIsUpdatingSubscription(true);
+    try {
+      const { error } = await supabase
+        .from('operators')
+        .update({
+          subscription_plan: subscriptionPlan,
+          subscription_status: subscriptionStatus,
+          subscription_expires_at: subscriptionExpiresAt ? new Date(subscriptionExpiresAt).toISOString() : null,
+          subscription_price_huf: parseInt(subscriptionPriceHuf) || 9999,
+          subscription_started_at: subscriptionStatus === 'active' && !selectedOperator.subscription_expires_at 
+            ? new Date().toISOString() 
+            : undefined,
+        })
+        .eq('id', selectedOperator.id);
+
+      if (error) throw error;
+
+      toast.success(t('admin.operators.subscriptionUpdated'));
+      setIsSubscriptionDialogOpen(false);
+      setSelectedOperator(null);
+      fetchOperators();
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      toast.error(t('error.generic'));
+    } finally {
+      setIsUpdatingSubscription(false);
+    }
+  };
+
+  const extendSubscription = async (months: number) => {
+    if (!selectedOperator) return;
+
+    const currentExpiry = selectedOperator.subscription_expires_at 
+      ? new Date(selectedOperator.subscription_expires_at) 
+      : new Date();
+    const newExpiry = addMonths(currentExpiry, months);
+    setSubscriptionExpiresAt(format(newExpiry, 'yyyy-MM-dd'));
+  };
+
   const handleNameChange = (value: string) => {
     setNewOperatorName(value);
     // Auto-generate slug from name only for new operators
@@ -857,8 +920,9 @@ const AdminOperators: React.FC = () => {
                   <TableRow>
                     <TableHead>{t('admin.operators.operatorName')}</TableHead>
                     <TableHead>{t('admin.operators.operatorSlug')}</TableHead>
+                    <TableHead>{t('admin.operators.subscriptionPlan')}</TableHead>
                     <TableHead>{t('admin.operators.status')}</TableHead>
-                    <TableHead>{t('admin.operators.createdAt')}</TableHead>
+                    <TableHead>{t('admin.operators.subscriptionExpiry')}</TableHead>
                     <TableHead className="text-right">{t('admin.operators.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -868,15 +932,32 @@ const AdminOperators: React.FC = () => {
                       <TableCell className="font-medium">{op.name}</TableCell>
                       <TableCell className="text-muted-foreground">{op.slug}</TableCell>
                       <TableCell>
-                        <Badge variant={op.subscription_status === 'active' ? 'default' : 'secondary'}>
-                          {op.subscription_status}
+                        <Badge variant="outline">
+                          {op.subscription_plan === 'yearly' ? t('admin.operators.planYearly') : t('admin.operators.planMonthly')}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {format(new Date(op.created_at), 'PP', { locale: dateLocale })}
+                        <Badge variant={
+                          op.subscription_status === 'active' ? 'default' : 
+                          op.subscription_status === 'trial' ? 'secondary' : 
+                          'destructive'
+                        }>
+                          {op.subscription_status === 'active' ? t('admin.operators.subscriptionActive') :
+                           op.subscription_status === 'trial' ? t('admin.operators.subscriptionTrial') :
+                           op.subscription_status === 'expired' ? t('admin.operators.subscriptionExpired') :
+                           op.subscription_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {op.subscription_expires_at 
+                          ? format(new Date(op.subscription_expires_at), 'PP', { locale: dateLocale })
+                          : '-'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openSubscriptionDialog(op)} title={t('admin.operators.manageSubscription')}>
+                            <Calendar className="w-4 h-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openStaffDialog(op)} title={t('admin.operators.manageStaff')}>
                             <Users className="w-4 h-4" />
                           </Button>
@@ -1209,6 +1290,85 @@ const AdminOperators: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Subscription Management Dialog */}
+      <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{t('admin.operators.manageSubscriptionTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('admin.operators.manageSubscriptionDescription')} {selectedOperator?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{t('admin.operators.subscriptionPlan')}</Label>
+              <Select value={subscriptionPlan} onValueChange={setSubscriptionPlan}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">{t('admin.operators.planMonthly')}</SelectItem>
+                  <SelectItem value="yearly">{t('admin.operators.planYearly')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('admin.operators.subscriptionStatus')}</Label>
+              <Select value={subscriptionStatus} onValueChange={setSubscriptionStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="trial">{t('admin.operators.subscriptionTrial')}</SelectItem>
+                  <SelectItem value="active">{t('admin.operators.subscriptionActive')}</SelectItem>
+                  <SelectItem value="expired">{t('admin.operators.subscriptionExpired')}</SelectItem>
+                  <SelectItem value="cancelled">{t('admin.operators.subscriptionCancelled')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('admin.operators.subscriptionExpiry')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="date"
+                  value={subscriptionExpiresAt}
+                  onChange={(e) => setSubscriptionExpiresAt(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => extendSubscription(1)}>
+                  +1 {t('admin.operators.month')}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => extendSubscription(3)}>
+                  +3 {t('admin.operators.months')}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => extendSubscription(12)}>
+                  +1 {t('admin.operators.year')}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('admin.operators.subscriptionPrice')} (HUF)</Label>
+              <Input
+                type="number"
+                value={subscriptionPriceHuf}
+                onChange={(e) => setSubscriptionPriceHuf(e.target.value)}
+                placeholder="9999"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSubscriptionDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={updateSubscription} disabled={isUpdatingSubscription}>
+              {isUpdatingSubscription ? t('common.loading') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
