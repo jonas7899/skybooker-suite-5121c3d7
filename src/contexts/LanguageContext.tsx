@@ -28,6 +28,7 @@ export const translations: Translations = {
   'dashboard.nav.settings': { hu: 'Beállítások', en: 'Settings' },
   'dashboard.nav.calendar': { hu: 'Naptár', en: 'Calendar' },
   'dashboard.nav.flights': { hu: 'Repülések', en: 'Flights' },
+  'dashboard.nav.packages': { hu: 'Csomagok', en: 'Packages' },
   'dashboard.nav.bookings': { hu: 'Foglalások', en: 'Bookings' },
   'dashboard.nav.staff': { hu: 'Személyzet', en: 'Staff' },
   'dashboard.nav.supporters': { hu: 'Támogatók', en: 'Supporters' },
