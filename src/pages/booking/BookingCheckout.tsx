@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTimeSlots } from '@/hooks/useTimeSlots';
 import { useBookings } from '@/hooks/useBookings';
 import { usePricing } from '@/hooks/usePricing';
+import { useSupportTier } from '@/hooks/useSupportTier';
 import { supabase } from '@/integrations/supabase/client';
 import { TimeSlot, FlightPackage } from '@/types/scheduling';
 import { PassengerDetails } from '@/types/booking';
@@ -14,12 +15,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import CouponInput from '@/components/booking/CouponInput';
 import PriceBreakdownComponent from '@/components/booking/PriceBreakdown';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { hu, enUS } from 'date-fns/locale';
-import { ArrowLeft, ArrowRight, Check, Plane, Calendar, Users, CreditCard } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Plane, Calendar, Users, CreditCard, Lock, Medal } from 'lucide-react';
 
 type Step = 'package' | 'timeslot' | 'passengers' | 'confirm';
 
@@ -44,6 +46,7 @@ const BookingCheckout = () => {
   const { timeSlots, loading: slotsLoading, fetchWeekSlots, canBook } = useTimeSlots();
   const { createBooking } = useBookings();
   const { calculatePrice, incrementCouponUsage } = usePricing();
+  const { currentTier, canBook: hasSupport, canBookPackage } = useSupportTier();
 
   useEffect(() => {
     checkAuth();
@@ -83,7 +86,7 @@ const BookingCheckout = () => {
   const loadPackages = async () => {
     const { data } = await supabase
       .from('flight_packages')
-      .select('*')
+      .select('*, min_support_tier:support_tiers(id, name, sort_order, color, icon)')
       .eq('is_active', true)
       .order('name');
     
@@ -94,7 +97,7 @@ const BookingCheckout = () => {
     if (packageId) {
       const { data: pkg } = await supabase
         .from('flight_packages')
-        .select('*')
+        .select('*, min_support_tier:support_tiers(id, name, sort_order, color, icon)')
         .eq('id', packageId)
         .single();
       
@@ -108,7 +111,7 @@ const BookingCheckout = () => {
     if (slotId) {
       const { data: slot } = await supabase
         .from('flight_time_slots')
-        .select('*, flight_package:flight_packages(*)')
+        .select('*, flight_package:flight_packages(*, min_support_tier:support_tiers(id, name, sort_order, color, icon))')
         .eq('id', slotId)
         .single();
       
@@ -123,6 +126,16 @@ const BookingCheckout = () => {
   };
 
   const handlePackageSelect = (pkg: FlightPackage) => {
+    // Check if user can book this package based on tier
+    const canBookThisPackage = canBookPackage(pkg.min_support_tier?.sort_order);
+    if (!canBookThisPackage) {
+      toast.error(
+        language === 'hu'
+          ? `Ez a csomag minimum "${pkg.min_support_tier?.name}" támogatói fokozatot igényel.`
+          : `This package requires at least "${pkg.min_support_tier?.name}" support tier.`
+      );
+      return;
+    }
     setSelectedPackage(pkg);
     setCurrentStep('timeslot');
     fetchWeekSlots(new Date());
@@ -290,34 +303,65 @@ const BookingCheckout = () => {
                   </p>
                 ) : (
                   <div className="grid gap-4">
-                    {packages.map((pkg) => (
-                      <div
-                        key={pkg.id}
-                        onClick={() => handlePackageSelect(pkg)}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-primary ${
-                          selectedPackage?.id === pkg.id ? 'border-primary bg-primary/5' : 'border-border'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-semibold">{pkg.name}</h3>
-                            <p className="text-sm text-muted-foreground">{pkg.short_description}</p>
-                            <div className="flex gap-4 mt-2 text-sm">
-                              <span>{pkg.duration_minutes} {language === 'hu' ? 'perc' : 'min'}</span>
-                              <span className="capitalize">{pkg.difficulty_level}</span>
+                    {packages.map((pkg) => {
+                      const canBookThis = canBookPackage(pkg.min_support_tier?.sort_order);
+                      const isLocked = pkg.min_support_tier && !canBookThis;
+                      
+                      return (
+                        <div
+                          key={pkg.id}
+                          onClick={() => handlePackageSelect(pkg)}
+                          className={`p-4 border rounded-lg transition-all ${
+                            isLocked 
+                              ? 'opacity-60 cursor-not-allowed border-border bg-muted/30' 
+                              : 'cursor-pointer hover:border-primary'
+                          } ${
+                            selectedPackage?.id === pkg.id ? 'border-primary bg-primary/5' : 'border-border'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="font-semibold">{pkg.name}</h3>
+                                {pkg.min_support_tier && (
+                                  <Badge 
+                                    variant={canBookThis ? "secondary" : "outline"}
+                                    className="text-xs flex items-center gap-1"
+                                    style={{ 
+                                      borderColor: pkg.min_support_tier.color || undefined,
+                                      color: canBookThis ? undefined : pkg.min_support_tier.color || undefined
+                                    }}
+                                  >
+                                    {isLocked ? <Lock className="w-3 h-3" /> : <Medal className="w-3 h-3" />}
+                                    {pkg.min_support_tier.name}+
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">{pkg.short_description}</p>
+                              <div className="flex gap-4 mt-2 text-sm">
+                                <span>{pkg.duration_minutes} {language === 'hu' ? 'perc' : 'min'}</span>
+                                <span className="capitalize">{pkg.difficulty_level}</span>
+                              </div>
+                              {isLocked && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                                  {language === 'hu' 
+                                    ? `Min. "${pkg.min_support_tier?.name}" fokozat szükséges`
+                                    : `Requires min. "${pkg.min_support_tier?.name}" tier`}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <span className="text-lg font-bold">
+                                {pkg.base_price_huf.toLocaleString()} Ft
+                              </span>
+                              <p className="text-xs text-muted-foreground">
+                                / {language === 'hu' ? 'fő' : 'person'}
+                              </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <span className="text-lg font-bold">
-                              {pkg.base_price_huf.toLocaleString()} Ft
-                            </span>
-                            <p className="text-xs text-muted-foreground">
-                              / {language === 'hu' ? 'fő' : 'person'}
-                            </p>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

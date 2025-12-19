@@ -29,6 +29,14 @@ export interface FlightPackage {
   max_passengers: number;
   image_url?: string;
   is_active: boolean;
+  min_support_tier_id?: string | null;
+  min_support_tier?: {
+    id: string;
+    name: string;
+    sort_order: number;
+    color?: string | null;
+    icon?: string | null;
+  };
   created_at: string;
   updated_at: string;
 }
