@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Booking, BookingStatus, PassengerDetails } from '@/types/booking';
 import { Json } from '@/integrations/supabase/types';
+import { sendNotificationEmail } from '@/lib/emailNotifications';
 
 export const useBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -83,22 +84,60 @@ export const useBookings = () => {
         user_id: user.id,
         passenger_details: booking.passenger_details as unknown as Json,
       }])
-      .select()
+      .select(`
+        *,
+        flight_package:flight_packages(name),
+        time_slot:flight_time_slots(slot_date, start_time)
+      `)
       .single();
 
     if (error) throw error;
+
+    // Send email notification for booking creation
+    try {
+      await sendNotificationEmail('booking_created', user.id, {
+        packageName: data.flight_package?.name,
+        slotDate: data.time_slot?.slot_date,
+        slotTime: data.time_slot?.start_time,
+      });
+    } catch (emailError) {
+      console.error('Failed to send booking email:', emailError);
+    }
+
     return data;
   };
 
-  const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
+  const updateBookingStatus = async (bookingId: string, status: BookingStatus, userId?: string) => {
     const { data, error } = await supabase
       .from('bookings')
       .update({ status })
       .eq('id', bookingId)
-      .select()
+      .select(`
+        *,
+        flight_package:flight_packages(name),
+        time_slot:flight_time_slots(slot_date, start_time)
+      `)
       .single();
 
     if (error) throw error;
+
+    // Send email notification for status change
+    const bookingUserId = userId || data.user_id;
+    if (bookingUserId) {
+      try {
+        const emailType = status === 'confirmed' ? 'booking_confirmed' : status === 'cancelled' ? 'booking_cancelled' : null;
+        if (emailType) {
+          await sendNotificationEmail(emailType, bookingUserId, {
+            packageName: data.flight_package?.name,
+            slotDate: data.time_slot?.slot_date,
+            slotTime: data.time_slot?.start_time,
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send status update email:', emailError);
+      }
+    }
+
     return data;
   };
 
