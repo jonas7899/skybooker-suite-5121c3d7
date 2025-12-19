@@ -22,6 +22,8 @@ import {
   Heart,
   Medal,
   CreditCard,
+  User,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface NavItem {
@@ -76,6 +78,8 @@ const DashboardLayout: React.FC = () => {
           { href: '/dashboard', label: t('dashboard.nav.myFlights'), icon: <Ticket className="w-5 h-5" /> },
           { href: '/dashboard/bookings', label: t('dashboard.nav.bookings'), icon: <Calendar className="w-5 h-5" /> },
           { href: '/dashboard/favorites', label: t('dashboard.nav.favorites'), icon: <Heart className="w-5 h-5" /> },
+          { href: '/profil', label: t('dashboard.nav.profile'), icon: <User className="w-5 h-5" /> },
+          { href: '/tamogatas', label: t('dashboard.nav.support'), icon: <HeartHandshake className="w-5 h-5" /> },
           { href: '/dashboard/settings', label: t('dashboard.nav.settings'), icon: <Settings className="w-5 h-5" /> },
         ];
       default:

@@ -36,6 +36,8 @@ export const translations: Translations = {
   'dashboard.nav.bankSettings': { hu: 'Bankszámla', en: 'Bank Settings' },
   'dashboard.nav.myFlights': { hu: 'Repüléseim', en: 'My Flights' },
   'dashboard.nav.favorites': { hu: 'Kedvencek', en: 'Favorites' },
+  'dashboard.nav.profile': { hu: 'Profilom', en: 'My Profile' },
+  'dashboard.nav.support': { hu: 'Támogatás', en: 'Support' },
   'dashboard.nav.signOut': { hu: 'Kijelentkezés', en: 'Sign Out' },
   
   // Role badges
