@@ -6,6 +6,8 @@ import { Menu, X, ChevronRight, Phone, Mail, Lock, User, KeyRound, Heart, LogOut
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSupportTier } from '@/hooks/useSupportTier';
+import SupportTierBadge from '@/components/subscription/SupportTierBadge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {
   DropdownMenu,
@@ -21,6 +23,7 @@ const PublicLayout: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { isAuthenticated, signOut, profile } = useAuth();
+  const { currentTier } = useSupportTier();
   const windfinderRef = useRef<HTMLDivElement>(null);
 
   // Public paths where WindFinder widget should be displayed
@@ -94,15 +97,17 @@ const PublicLayout: React.FC = () => {
             <div className="hidden md:flex items-center gap-4">
               <LanguageSwitcher />
               {isAuthenticated ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <User className="w-4 h-4" />
-                      <span className="max-w-32 truncate">{profile?.full_name || 'Profil'}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                <div className="flex items-center gap-3">
+                  <SupportTierBadge tier={currentTier} size="sm" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <User className="w-4 h-4" />
+                        <span className="max-w-32 truncate">{profile?.full_name || 'Profil'}</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={() => navigate('/profil')}>
                       <User className="w-4 h-4 mr-2" />
                       {language === 'hu' ? 'Profilom szerkesztése' : 'Edit Profile'}
@@ -122,6 +127,7 @@ const PublicLayout: React.FC = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              </div>
               ) : (
                 <Button variant="default" size="sm" asChild>
                   <Link to="/belepes">{t('auth.login')}</Link>
@@ -171,7 +177,10 @@ const PublicLayout: React.FC = () => {
               <LanguageSwitcher />
               {isAuthenticated ? (
                 <>
-                  <p className="text-sm font-medium px-2">{profile?.full_name}</p>
+                  <div className="flex items-center gap-2 px-2">
+                    <SupportTierBadge tier={currentTier} size="sm" />
+                    <span className="text-sm font-medium">{profile?.full_name}</span>
+                  </div>
                   <Link
                     to="/profil"
                     className="menu-item text-sm"
