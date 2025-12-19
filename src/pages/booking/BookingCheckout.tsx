@@ -182,6 +182,16 @@ const BookingCheckout = () => {
 
     if (!selectedPackage || !selectedSlot) return;
 
+    // Check if user has active support
+    if (!hasSupport) {
+      toast.error(
+        language === 'hu' 
+          ? 'Nincs aktív támogatásod. Kérjük, támogasd az egyesületet a foglaláshoz!' 
+          : 'No active support. Please support the association to book!'
+      );
+      return;
+    }
+
     const isValid = passengerDetails.every(p => p.name.trim() !== '');
     if (!isValid) {
       toast.error(language === 'hu' ? 'Add meg az utasok nevét!' : 'Please enter passenger names!');
@@ -190,7 +200,10 @@ const BookingCheckout = () => {
 
     setIsSubmitting(true);
     try {
-      await createBooking({
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const bookingData = await createBooking({
         flight_package_id: selectedPackage.id,
         time_slot_id: selectedSlot.id,
         passenger_count: passengerCount,
@@ -198,6 +211,22 @@ const BookingCheckout = () => {
         total_price_huf: totalPrice,
         notes,
       });
+
+      // Mark user support as used with the booking ID
+      const { error: supportError } = await supabase
+        .from('user_supports')
+        .update({ 
+          booking_used: true, 
+          booking_id: bookingData.id 
+        })
+        .eq('user_id', user.id)
+        .eq('booking_used', false)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (supportError) {
+        console.error('Error marking support as used:', supportError);
+      }
 
       // Increment coupon usage if one was applied
       if (appliedCoupon) {
