@@ -241,6 +241,16 @@ export const translations: Translations = {
   'admin.operators.created': { hu: 'Operátor sikeresen létrehozva', en: 'Operator created successfully' },
   'admin.operators.fillAllFields': { hu: 'Kérlek töltsd ki az összes mezőt', en: 'Please fill in all fields' },
   'admin.operators.slugExists': { hu: 'Ez a slug már foglalt', en: 'This slug is already taken' },
+  'admin.operators.operatorsList': { hu: 'Operátorok', en: 'Operators' },
+  'admin.operators.noOperators': { hu: 'Még nincs regisztrált operátor', en: 'No operators registered yet' },
+  'admin.operators.editTitle': { hu: 'Operátor szerkesztése', en: 'Edit Operator' },
+  'admin.operators.editDescription': { hu: 'Módosítsd az operátor adatait', en: 'Update the operator details' },
+  'admin.operators.updated': { hu: 'Operátor sikeresen frissítve', en: 'Operator updated successfully' },
+  'admin.operators.deleteTitle': { hu: 'Operátor törlése', en: 'Delete Operator' },
+  'admin.operators.deleteDescription': { hu: 'Biztosan törölni szeretnéd ezt az operátort? Ez a művelet nem vonható vissza.', en: 'Are you sure you want to delete this operator? This action cannot be undone.' },
+  'admin.operators.deleted': { hu: 'Operátor sikeresen törölve', en: 'Operator deleted successfully' },
+  'common.save': { hu: 'Mentés', en: 'Save' },
+  'common.delete': { hu: 'Törlés', en: 'Delete' },
   'common.loading': { hu: 'Betöltés...', en: 'Loading...' },
 
   // Admin Users
